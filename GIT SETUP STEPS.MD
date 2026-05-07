@@ -1,4 +1,18 @@
-git config --global user.name "Davateck777"
+FIST CREATE THE GIT REPO @ GITHUB
+
+SECOND CLONE THE REPO TO YOUR LOCAL MACHINE @VSCODE 
+
+THIRD OPEN THE REPO IN VSCODE
+
+FOURTH COMMIT / PUSH THE CHANGES
+
+FIFTH PUSH THE CHANGES||PULL THE CHANGES
+
+AND THAT IS ALL YOU NEED FOR DOING [ VSCODE ]-->[ GITHUB ]
+
+
+it config --global user.name "Davateck777"
 
 git config --global user.email "davatech202@gmail.com"
+
 
