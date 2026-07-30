@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Particle Cursor Trail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #030712;
+      color: #f9fafb;
+      overflow: hidden;
+      user-select: none;
+    }
+    
+    code, pre {
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* Custom Glassmorphism UI Panels */
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-button {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .glass-button:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Custom Scrollbar for Drawer/Code Views */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.5);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.8);
+    }
+
+    /* Input Range Custom Styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      height: 6px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+      transition: transform 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+  </style>
+</head>
+<body class="relative w-screen h-screen overflow-hidden bg-slate-950 text-slate-100">
+
+  <!-- Main Particle Canvas -->
+  <canvas id="particle-canvas" class="absolute inset-0 w-full h-full cursor-none block z-0"></canvas>
+
+  <!-- Header Bar -->
+  <header class="absolute top-0 left-0 right-0 z-10 px-4 sm:px-6 py-4 flex items-center justify-between pointer-events-none">
+    <!-- Title & Status Badge -->
+    <div class="flex items-center gap-3 pointer-events-auto">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base sm:text-lg leading-tight tracking-wide bg-gradient-to-r from-slate-100 via-cyan-200 to-blue-400 bg-clip-text text-transparent">
+          Cursor Particle Trail
+        </h1>
+        <p class="text-xs text-slate-400 hidden sm:block">Interactive 2D Canvas Physics & Particle System</p>
+      </div>
+    </div>
+
+    <!-- Action Controls Toolbar -->
+    <div class="flex items-center gap-2 pointer-events-auto">
+      <button id="btn-sound" onclick="toggleAudio()" class="glass-button px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white flex items-center gap-1.5" title="Toggle Sound Feedback">
+        <i id="sound-icon" class="fa-solid fa-volume-xmark text-slate-400"></i>
+        <span class="hidden md:inline">Audio</span>
+      </button>
+
+      <button onclick="toggleInspector()" class="glass-button px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white flex items-center gap-1.5" title="Inspect Code & Math">
+        <i class="fa-solid fa-code text-cyan-400"></i>
+        <span class="hidden md:inline">Code Inspector</span>
+      </button>
+
+      <button onclick="clearParticles()" class="glass-button px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white flex items-center gap-1.5" title="Clear Canvas">
+        <i class="fa-solid fa-rotate-right text-amber-400"></i>
+        <span class="hidden md:inline">Clear</span>
+      </button>
+
+      <button onclick="toggleSettings()" class="glass-button px-3.5 py-2 rounded-xl text-xs font-medium bg-cyan-500/20 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/30 flex items-center gap-1.5 shadow-lg shadow-cyan-500/10">
+        <i class="fa-solid fa-sliders"></i>
+        <span class="hidden sm:inline">Controls</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats HUD (Top Left / Floating) -->
+  <div class="absolute top-20 left-4 sm:left-6 z-10 glass-panel px-3 py-2 rounded-xl text-xs text-slate-300 flex items-center gap-4 pointer-events-none shadow-xl border-slate-800">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span id="hud-fps" class="font-mono text-emerald-400 font-semibold">60 FPS</span>
+    </div>
+    <div class="h-3 w-px bg-slate-700"></div>
+    <div>
+      <span class="text-slate-400">Particles: </span>
+      <span id="hud-count" class="font-mono text-cyan-400 font-semibold">0</span>
+    </div>
+    <div class="h-3 w-px bg-slate-700 hidden sm:block"></div>
+    <div class="hidden sm:block">
+      <span class="text-slate-400">XY: </span>
+      <span id="hud-pos" class="font-mono text-slate-300">0, 0</span>
+    </div>
+  </div>
+
+  <!-- Quick Preset Switcher (Bottom Center) -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 glass-panel p-1.5 rounded-2xl flex items-center gap-1 shadow-2xl border-slate-800/80 max-w-[95vw] overflow-x-auto">
+    <button onclick="applyPreset('sparkles')" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 whitespace-nowrap">
+      <i class="fa-solid fa-bolt text-xs"></i> Neon Sparks
+    </button>
+    <button onclick="applyPreset('galaxy')" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-stroopwafel text-xs"></i> Cosmic Dust
+    </button>
+    <button onclick="applyPreset('fireflies')" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-bug text-xs"></i> Fireflies
+    </button>
+    <button onclick="applyPreset('burst')" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-explosion text-xs"></i> Supernova
+    </button>
+    <button onclick="applyPreset('fluid')" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-ribbon text-xs"></i> Liquid Ribbon
+    </button>
+  </div>
+
+  <!-- Settings Drawer Panel -->
+  <aside id="settings-panel" class="absolute top-0 right-0 bottom-0 w-80 sm:w-96 glass-panel z-20 translate-x-full transition-transform duration-300 ease-out flex flex-col border-l border-slate-800 shadow-2xl">
+    <!-- Panel Header -->
+    <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-sliders text-cyan-400"></i>
+        <h2 class="font-bold text-slate-100 text-sm sm:text-base">Trail Parameters</h2>
+      </div>
+      <button onclick="toggleSettings()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Sliders & Controls Body -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 text-xs">
+      
+      <!-- Color Palette Selection -->
+      <div>
+        <label class="block font-semibold text-slate-300 mb-2">Color Palette</label>
+        <select id="ctrl-palette" onchange="updateSettingsFromUI()" class="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-3 py-2 outline-none focus:border-cyan-500">
+          <option value="cyberpunk">Cyberpunk Neon (Cyan / Magenta)</option>
+          <option value="rainbow">Dynamic Rainbow Cycle</option>
+          <option value="solar">Solar Flare (Gold / Crimson)</option>
+          <option value="emerald">Emerald Forest (Green / Teal)</option>
+          <option value="ghost">Monochrome Ghost (Silver / White)</option>
+        </select>
+      </div>
+
+      <!-- Spawn Rate / Count -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Emission Density</span>
+          <span id="val-spawn" class="font-mono text-cyan-400">5 particles/frame</span>
+        </div>
+        <input type="range" id="ctrl-spawn" min="1" max="20" step="1" value="5" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Initial Size -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Base Particle Size</span>
+          <span id="val-size" class="font-mono text-cyan-400">8 px</span>
+        </div>
+        <input type="range" id="ctrl-size" min="2" max="30" step="1" value="8" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Lifespan / Decay -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Particle Lifespan</span>
+          <span id="val-life" class="font-mono text-cyan-400">60 frames</span>
+        </div>
+        <input type="range" id="ctrl-life" min="15" max="180" step="5" value="60" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Initial Velocity / Spread -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Velocity Spread</span>
+          <span id="val-speed" class="font-mono text-cyan-400">3.5</span>
+        </div>
+        <input type="range" id="ctrl-speed" min="0.2" max="10" step="0.2" value="3.5" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Gravity Vector -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Gravity Force</span>
+          <span id="val-gravity" class="font-mono text-cyan-400">0.02</span>
+        </div>
+        <input type="range" id="ctrl-gravity" min="-0.2" max="0.3" step="0.01" value="0.02" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Turbulence / Chaos -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Turbulence Drift</span>
+          <span id="val-turbulence" class="font-mono text-cyan-400">0.4</span>
+        </div>
+        <input type="range" id="ctrl-turbulence" min="0" max="2" step="0.1" value="0.4" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Composite Blend Mode -->
+      <div>
+        <label class="block font-semibold text-slate-300 mb-2">Blend Mode</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="blend-lighter" onclick="setBlendMode('lighter')" class="px-3 py-2 rounded-xl border border-cyan-500 bg-cyan-500/20 text-cyan-300 font-medium">Lighter (Glow)</button>
+          <button id="blend-source" onclick="setBlendMode('source-over')" class="px-3 py-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-400 font-medium">Standard</button>
+        </div>
+      </div>
+
+      <!-- Special Physics Toggles -->
+      <div class="pt-2 border-t border-slate-800 space-y-3">
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-semibold text-slate-300">Shrink Over Time</span>
+          <input type="checkbox" id="ctrl-shrink" checked onchange="updateSettingsFromUI()" class="w-4 h-4 accent-cyan-500 rounded">
+        </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-semibold text-slate-300">Burst on Click</span>
+          <input type="checkbox" id="ctrl-burst" checked onchange="updateSettingsFromUI()" class="w-4 h-4 accent-cyan-500 rounded">
+        </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-semibold text-slate-300">Connect Neighbor Lines</span>
+          <input type="checkbox" id="ctrl-lines" onchange="updateSettingsFromUI()" class="w-4 h-4 accent-cyan-500 rounded">
+        </label>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- Code & Math Inspector Modal -->
+  <div id="inspector-modal" class="fixed inset-0 z-30 glass-panel bg-slate-950/80 hidden flex-col p-4 sm:p-8 overflow-hidden">
+    <div class="max-w-4xl w-full mx-auto flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-code text-cyan-400 text-lg"></i>
+          <h2 class="font-bold text-slate-100 text-base">Particle Physics & Engine Code</h2>
+        </div>
+        <button onclick="toggleInspector()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Code Inspector Tabs & Content -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-950">
+        <div class="mb-4 text-xs text-slate-400 leading-relaxed">
+          The <strong>Particle Cursor Trail</strong> works by instantiating lightweight JS objects at the mouse context <code class="text-cyan-300">(x, y)</code> on every frame. Each particle updates its position vector using velocity, drag, and gravity while decreasing its lifespan to shrink and fade opacity.
+        </div>
+        
+        <pre class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-xs text-emerald-400 overflow-x-auto leading-relaxed"><code>class Particle {
+  constructor(x, y, options) {
+    this.x = x;
+    this.y = y;
+    this.size = options.baseSize * (0.8 + Math.random() * 0.4);
+    
+    // Radial Velocity Vector calculation
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * options.speedSpread;
+    this.vx = Math.cos(angle) * speed;
+    this.vy = Math.sin(angle) * speed;
+
+    this.life = options.maxLife;
+    this.maxLife = options.maxLife;
+    this.color = options.palette.getColor(x, y);
+  }
+
+  update(gravity, turbulence, shrink) {
+    // Add physics forces
+    this.vx += (Math.random() - 0.5) * turbulence;
+    this.vy += gravity + (Math.random() - 0.5) * turbulence;
+    
+    // Position integration
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Lifespan & Size Decay
+    this.life--;
+    if (shrink) {
+      this.currentSize = Math.max(0, (this.life / this.maxLife) * this.size);
+    }
+  }
+
+  draw(ctx, blendMode) {
+    const alpha = this.life / this.maxLife;
+    ctx.globalCompositeOperation = blendMode;
+    ctx.fillStyle = this.color.replace('ALPHA', alpha);
+    
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.currentSize, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}</code></pre>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-slate-800 bg-slate-950/50 flex items-center justify-between">
+        <span class="text-xs text-slate-400"><i class="fa-brands fa-js text-yellow-400"></i> Pure Vanilla JS Canvas Engine</span>
+        <button onclick="copyInspectorCode()" class="glass-button px-3 py-1.5 rounded-xl text-xs text-cyan-300 flex items-center gap-1.5">
+          <i class="fa-regular fa-copy"></i> Copy Snippet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Canvas & Context Setup
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Engine State
+    let particles = [];
+    let animationFrameId = null;
+    let isAudioActive = false;
+    let audioCtx = null;
+
+    // Mouse Pointer State
+    const mouse = {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+      prevX: window.innerWidth / 2,
+      prevY: window.innerHeight / 2,
+      speed: 0,
+      isDown: false,
+      active: false
+    };
+
+    // System Settings & Config
+    const settings = {
+      palette: 'cyberpunk',
+      spawnRate: 5,
+      baseSize: 8,
+      maxLife: 60,
+      speedSpread: 3.5,
+      gravity: 0.02,
+      turbulence: 0.4,
+      blendMode: 'lighter',
+      shrink: true,
+      burstOnClick: true,
+      connectLines: false,
+      hueShift: 0
+    };
+
+    // Performance FPS Monitor
+    let lastTime = performance.now();
+    let frameCount = 0;
+    let currentFps = 60;
+
+    // Color Palette Definitions
+    const PALETTES = {
+      cyberpunk: (x, y, age) => {
+        const hue = (x * 0.1 + settings.hueShift) % 360;
+        return `hsla(${hue > 180 ? 190 : 320}, 95%, 65%, ALPHA)`;
+      },
+      rainbow: (x, y, age) => {
+        const hue = (settings.hueShift + age * 3) % 360;
+        return `hsla(${hue}, 90%, 60%, ALPHA)`;
+      },
+      solar: (x, y, age) => {
+        const hue = Math.random() > 0.5 ? 40 : 10;
+        return `hsla(${hue}, 100%, 60%, ALPHA)`;
+      },
+      emerald: (x, y, age) => {
+        const hue = 150 + Math.random() * 40;
+        return `hsla(${hue}, 85%, 55%, ALPHA)`;
+      },
+      ghost: (x, y, age) => {
+        return `hsla(210, 20%, 90%, ALPHA)`;
+      }
+    };
+
+    // Particle Object Class
+    class Particle {
+      constructor(x, y, vx, vy) {
+        this.x = x;
+        this.y = y;
+        this.size = settings.baseSize * (0.6 + Math.random() * 0.8);
+        this.currentSize = this.size;
+        
+        // Velocity vector assignment
+        const angle = Math.random() * Math.PI * 2;
+        const spd = Math.random() * settings.speedSpread;
+        this.vx = vx !== undefined ? vx : Math.cos(angle) * spd;
+        this.vy = vy !== undefined ? vy : Math.sin(angle) * spd;
+
+        this.life = settings.maxLife;
+        this.maxLife = settings.maxLife;
+        this.age = frameCount;
+        this.colorFunc = PALETTES[settings.palette] || PALETTES.cyberpunk;
+      }
+
+      update() {
+        // Turbulence noise force
+        if (settings.turbulence > 0) {
+          this.vx += (Math.random() - 0.5) * settings.turbulence;
+          this.vy += (Math.random() - 0.5) * settings.turbulence;
+        }
+
+        // Apply gravity force
+        this.vy += settings.gravity;
+
+        // Update coordinates
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Age decay
+        this.life--;
+
+        // Size decay calculation
+        if (settings.shrink) {
+          this.currentSize = Math.max(0, (this.life / this.maxLife) * this.size);
+        } else {
+          this.currentSize = this.size;
+        }
+      }
+
+      draw() {
+        if (this.life <= 0 || this.currentSize <= 0) return;
+
+        const alpha = Math.max(0, this.life / this.maxLife);
+        const colorStr = this.colorFunc(this.x, this.y, this.age).replace('ALPHA', alpha.toFixed(2));
+
+        ctx.fillStyle = colorStr;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.currentSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Spawn Particles at Mouse Coordinates
+    function spawnParticles(count, originX, originY, forceBurst = false) {
+      const px = originX !== undefined ? originX : mouse.x;
+      const py = originY !== undefined ? originY : mouse.y;
+
+      for (let i = 0; i < count; i++) {
+        if (forceBurst) {
+          const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5);
+          const spd = (2 + Math.random() * 5) * (settings.speedSpread * 0.8);
+          const vx = Math.cos(angle) * spd;
+          const vy = Math.sin(angle) * spd;
+          particles.push(new Particle(px, py, vx, vy));
+        } else {
+          particles.push(new Particle(px, py));
+        }
+      }
+
+      // Audio feedback trigger
+      if (isAudioActive && forceBurst) {
+        playSparkleSound();
+      }
+    }
+
+    // Web Audio Synthesizer Sound Sparkle
+    function playSparkleSound() {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        
+        // Random harmonic pitch
+        const freq = 400 + Math.random() * 800;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.5, audioCtx.currentTime + 0.1);
+
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } catch (e) {
+        // Audio fallback
+      }
+    }
+
+    // Draw connecting lines between adjacent particles
+    function drawConnections() {
+      if (!settings.connectLines || particles.length > 300) return;
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 0.5;
+
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 60) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    // Main Render Animation Frame
+    function animate(currentTime = performance.now()) {
+      // Calculate FPS
+      frameCount++;
+      if (currentTime - lastTime >= 1000) {
+        currentFps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+        document.getElementById('hud-fps').innerText = `${currentFps} FPS`;
+        frameCount = 0;
+        lastTime = currentTime;
+      }
+
+      // Clear Canvas Frame
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = 'rgba(3, 7, 18, 0.25)'; // Smooth trailing motion blur effect
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Auto spawn on mouse motion
+      if (mouse.active) {
+        const dx = mouse.x - mouse.prevX;
+        const dy = mouse.y - mouse.prevY;
+        mouse.speed = Math.sqrt(dx * dx + dy * dy);
+        
+        // Dynamic spawn rate based on mouse velocity
+        const extraSpawn = Math.min(10, Math.floor(mouse.speed * 0.2));
+        spawnParticles(settings.spawnRate + extraSpawn);
+
+        mouse.prevX = mouse.x;
+        mouse.prevY = mouse.y;
+      }
+
+      // Set Composite Blend Mode
+      ctx.globalCompositeOperation = settings.blendMode;
+
+      // Update & Draw Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        p.draw();
+
+        // Garbage collection for dead particles
+        if (p.life <= 0 || p.currentSize <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+
+      // Draw Neighbor Lines if Enabled
+      drawConnections();
+
+      // Update HUD Tracker
+      document.getElementById('hud-count').innerText = particles.length;
+      document.getElementById('hud-pos').innerText = `${Math.round(mouse.x)}, ${Math.round(mouse.y)}`;
+
+      // Update Hue shift ticker
+      settings.hueShift += 1;
+
+      animationFrameId = requestAnimationFrame(animate);
+    }
+
+    // Preset Configurations
+    function applyPreset(name) {
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.className = "preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap";
+      });
+      event.currentTarget.className = "preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 whitespace-nowrap";
+
+      if (name === 'sparkles') {
+        settings.palette = 'cyberpunk';
+        settings.spawnRate = 5;
+        settings.baseSize = 8;
+        settings.maxLife = 60;
+        settings.speedSpread = 3.5;
+        settings.gravity = 0.02;
+        settings.turbulence = 0.4;
+        settings.blendMode = 'lighter';
+        settings.shrink = true;
+        settings.connectLines = false;
+      } else if (name === 'galaxy') {
+        settings.palette = 'rainbow';
+        settings.spawnRate = 8;
+        settings.baseSize = 5;
+        settings.maxLife = 90;
+        settings.speedSpread = 1.8;
+        settings.gravity = -0.01;
+        settings.turbulence = 0.8;
+        settings.blendMode = 'lighter';
+        settings.shrink = true;
+        settings.connectLines = true;
+      } else if (name === 'fireflies') {
+        settings.palette = 'emerald';
+        settings.spawnRate = 3;
+        settings.baseSize = 12;
+        settings.maxLife = 110;
+        settings.speedSpread = 1.2;
+        settings.gravity = -0.04;
+        settings.turbulence = 1.2;
+        settings.blendMode = 'lighter';
+        settings.shrink = true;
+        settings.connectLines = false;
+      } else if (name === 'burst') {
+        settings.palette = 'solar';
+        settings.spawnRate = 12;
+        settings.baseSize = 14;
+        settings.maxLife = 40;
+        settings.speedSpread = 7.0;
+        settings.gravity = 0.15;
+        settings.turbulence = 0.2;
+        settings.blendMode = 'lighter';
+        settings.shrink = true;
+        settings.connectLines = false;
+      } else if (name === 'fluid') {
+        settings.palette = 'ghost';
+        settings.spawnRate = 6;
+        settings.baseSize = 18;
+        settings.maxLife = 80;
+        settings.speedSpread = 0.5;
+        settings.gravity = 0.0;
+        settings.turbulence = 0.1;
+        settings.blendMode = 'source-over';
+        settings.shrink = true;
+        settings.connectLines = false;
+      }
+
+      syncInputsWithSettings();
+    }
+
+    function syncInputsWithSettings() {
+      document.getElementById('ctrl-palette').value = settings.palette;
+      document.getElementById('ctrl-spawn').value = settings.spawnRate;
+      document.getElementById('ctrl-size').value = settings.baseSize;
+      document.getElementById('ctrl-life').value = settings.maxLife;
+      document.getElementById('ctrl-speed').value = settings.speedSpread;
+      document.getElementById('ctrl-gravity').value = settings.gravity;
+      document.getElementById('ctrl-turbulence').value = settings.turbulence;
+      document.getElementById('ctrl-shrink').checked = settings.shrink;
+      document.getElementById('ctrl-lines').checked = settings.connectLines;
+      setBlendMode(settings.blendMode);
+
+      // Labels
+      document.getElementById('val-spawn').innerText = `${settings.spawnRate} particles/frame`;
+      document.getElementById('val-size').innerText = `${settings.baseSize} px`;
+      document.getElementById('val-life').innerText = `${settings.maxLife} frames`;
+      document.getElementById('val-speed').innerText = settings.speedSpread;
+      document.getElementById('val-gravity').innerText = settings.gravity;
+      document.getElementById('val-turbulence').innerText = settings.turbulence;
+    }
+
+    function updateSettingsFromUI() {
+      settings.palette = document.getElementById('ctrl-palette').value;
+      settings.spawnRate = parseInt(document.getElementById('ctrl-spawn').value);
+      settings.baseSize = parseInt(document.getElementById('ctrl-size').value);
+      settings.maxLife = parseInt(document.getElementById('ctrl-life').value);
+      settings.speedSpread = parseFloat(document.getElementById('ctrl-speed').value);
+      settings.gravity = parseFloat(document.getElementById('ctrl-gravity').value);
+      settings.turbulence = parseFloat(document.getElementById('ctrl-turbulence').value);
+      settings.shrink = document.getElementById('ctrl-shrink').checked;
+      settings.burstOnClick = document.getElementById('ctrl-burst').checked;
+      settings.connectLines = document.getElementById('ctrl-lines').checked;
+
+      document.getElementById('val-spawn').innerText = `${settings.spawnRate} particles/frame`;
+      document.getElementById('val-size').innerText = `${settings.baseSize} px`;
+      document.getElementById('val-life').innerText = `${settings.maxLife} frames`;
+      document.getElementById('val-speed').innerText = settings.speedSpread;
+      document.getElementById('val-gravity').innerText = settings.gravity;
+      document.getElementById('val-turbulence').innerText = settings.turbulence;
+    }
+
+    function setBlendMode(mode) {
+      settings.blendMode = mode;
+      const bLighter = document.getElementById('blend-lighter');
+      const bSource = document.getElementById('blend-source');
+      if (mode === 'lighter') {
+        bLighter.className = "px-3 py-2 rounded-xl border border-cyan-500 bg-cyan-500/20 text-cyan-300 font-medium";
+        bSource.className = "px-3 py-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-400 font-medium";
+      } else {
+        bSource.className = "px-3 py-2 rounded-xl border border-cyan-500 bg-cyan-500/20 text-cyan-300 font-medium";
+        bLighter.className = "px-3 py-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-400 font-medium";
+      }
+    }
+
+    // Handle Window Resize
+    function handleResize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    // Toggle Settings Drawer
+    function toggleSettings() {
+      const panel = document.getElementById('settings-panel');
+      panel.classList.toggle('translate-x-full');
+    }
+
+    // Toggle Code Inspector Modal
+    function toggleInspector() {
+      const modal = document.getElementById('inspector-modal');
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+    }
+
+    // Toggle Sound Audio Feedback
+    function toggleAudio() {
+      isAudioActive = !isAudioActive;
+      const icon = document.getElementById('sound-icon');
+      if (isAudioActive) {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        audioCtx.resume();
+        icon.className = "fa-solid fa-volume-high text-cyan-400";
+      } else {
+        icon.className = "fa-solid fa-volume-xmark text-slate-400";
+      }
+    }
+
+    // Clear Canvas Particles
+    function clearParticles() {
+      particles = [];
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function copyInspectorCode() {
+      const codeSnippet = `class Particle {
+  constructor(x, y, speedSpread) {
+    this.x = x; this.y = y;
+    const angle = Math.random() * Math.PI * 2;
+    this.vx = Math.cos(angle) * Math.random() * speedSpread;
+    this.vy = Math.sin(angle) * Math.random() * speedSpread;
+    this.life = 60;
+  }
+  update(gravity) {
+    this.vy += gravity;
+    this.x += this.vx; this.y += this.vy;
+    this.life--;
+  }
+}`;
+      document.execCommand('copy');
+      alert('Code snippet copied to clipboard!');
+    }
+
+    // Mouse Event Listeners
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      mouse.active = true;
+    });
+
+    window.addEventListener('mousedown', (e) => {
+      mouse.isDown = true;
+      if (settings.burstOnClick) {
+        spawnParticles(40, e.clientX, e.clientY, true);
+      }
+    });
+
+    window.addEventListener('mouseup', () => mouse.isDown = false);
+
+    // Touch Event Listeners (Mobile support)
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        mouse.x = e.touches[0].clientX;
+        mouse.y = e.touches[0].clientY;
+        mouse.active = true;
+      }
+    });
+
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches.length > 0) {
+        mouse.x = e.touches[0].clientX;
+        mouse.y = e.touches[0].clientY;
+        mouse.active = true;
+        if (settings.burstOnClick) {
+          spawnParticles(40, mouse.x, mouse.y, true);
+        }
+      }
+    });
+
+    // Initialize System
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('DOMContentLoaded', () => {
+      handleResize();
+      animate();
+    });
+  </script>
+</body>
+</html>
