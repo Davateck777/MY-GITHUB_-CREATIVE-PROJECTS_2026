@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Visual 1 — Recursive Fractal Tree</title>
+<!-- p5.js loaded from CDN so the file works with no internet? It needs the CDN, but works when opened directly. -->
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<style>
+  body { margin: 0; background: #0b0d17; display: flex; flex-direction: column; align-items: center; font-family: system-ui, sans-serif; color: #e8e8f0;}
+  h2 { margin-top: 14px; font-weight: 500; letter-spacing: 1px;}
+  canvas { border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);}
+  p.hint { opacity: 0.6; font-size: 13px; margin: 8px 0 20px;}
+</style>
+</head>
+<body>
+<h2>VISUAL 01 — FRACTAL TREE</h2>
+<p class="hint">Move the mouse to sway the branches · Click to draw a new tree</p>
+<script>
+/* ============================================================
+   VISUAL 1 : RECURSIVE FRACTAL TREE (p5.js)
+   ------------------------------------------------------------
+   How it works:
+   1. We draw a single vertical trunk starting near the bottom.
+   2. At the end of each branch, we recursively split into two
+      smaller branches at an angle controlled by the mouse X.
+   3. Branch length shrinks and stroke color shifts toward pink
+      as recursion depth increases, giving a blossom effect.
+   4. Mouse X controls the spread angle (how "open" the tree is).
+      Mouse Y controls branching depth (1 to 12 levels).
+   ============================================================ */
+
+let seed;
+
+function setup() {
+  createCanvas(700, 600);
+  seed = random(10000);
+}
+
+function draw() {
+  background(11, 13, 23, 40); // trailing fade for gentle sway
+  randomSeed(seed);          // keep structure stable between frames
+  strokeWeight(2);
+  noFill();
+
+  // Map mouse position to tree parameters
+  let angle  = map(mouseX, 0, width, 0, PI / 2, true); // spread
+  let depth  = map(mouseY, 0, height, 12, 1, true);    // depth
+
+  // Draw trunk starting at bottom-center
+  translate(width / 2, height - 40);
+  stroke(180, 220, 255);
+  branch(120, depth, angle);
+}
+
+function branch(len, depth, angle) {
+  // Draw the branch line
+  strokeWeight(map(depth, 0, 12, 0.5, 4));
+  // Color shifts from blue-white trunk -> pink at tips
+  let t = map(depth, 0, 12, 0, 1);
+  stroke(lerpColor(color(230, 240, 255), color(255, 120, 180), t), 230);
+
+  line(0, 0, 0, -len);
+  translate(0, -len); // move coordinate system to branch tip
+
+  if (depth > 0) {
+    // Left child
+    push();
+    rotate(angle + random(-0.1, 0.1));
+    branch(len * 0.72, depth - 1, angle);
+    pop();
+    // Right child
+    push();
+    rotate(-angle + random(-0.1, 0.1));
+    branch(len * 0.72, depth - 1, angle);
+    pop();
+    // Occasional middle "twig" for organic feel
+    if (random() < 0.3) {
+      push();
+      rotate(random(-0.3, 0.3));
+      branch(len * 0.5, depth - 2, angle);
+      pop();
+    }
+  } else {
+    // Draw a blossom at the leaf tip
+    noStroke();
+    fill(255, 140, 200, 200);
+    circle(0, 0, 4);
+    fill(255, 200, 220, 180);
+    circle(0, 0, 2);
+    noFill();
+    stroke(180, 220, 255);
+  }
+}
+
+function mousePressed() {
+  seed = random(10000); // new tree
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Visual 2 — Interactive Particle System</title>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<style>
+  body { margin: 0; background: #06060c; display: flex; flex-direction: column; align-items: center; font-family: system-ui, sans-serif; color: #e8e8f0;}
+  h2 { margin-top: 14px; font-weight: 500; letter-spacing: 1px;}
+  canvas { border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); cursor: none;}
+  p.hint { opacity: 0.6; font-size: 13px; margin: 8px 0 20px;}
+</style>
+</head>
+<body>
+<h2>VISUAL 02 — REPELLING PARTICLES</h2>
+<p class="hint">Move the mouse — particles flee from your cursor &middot; Click to spawn a burst</p>
+<script>
+/* ============================================================
+   VISUAL 2 : INTERACTIVE PARTICLE SYSTEM (p5.js)
+   ------------------------------------------------------------
+   How it works:
+   1. We maintain an array of ~600 particles floating in space.
+   2. Each frame we compute a "repulsion force" from the cursor
+      to every particle (inverse-square law, like an electric
+      charge) and add small random jitter for life.
+   3. Particles leave soft trails because we redraw the
+      background with low alpha instead of clearing fully.
+   4. Color is driven by speed and position (HSL) so fast
+      particles glow warm, slow ones stay cool blue.
+   ============================================================ */
+
+let particles = [];
+const COUNT = 600;
+
+function setup() {
+  createCanvas(800, 600);
+  colorMode(HSL, 360, 100, 100, 100);
+  for (let i = 0; i < COUNT; i++) {
+    particles.push(new Particle(random(width), random(height)));
+  }
+}
+
+function draw() {
+  // translucent fill creates motion trails
+  background(245, 50, 5, 12);
+
+  noStroke();
+  for (let p of particles) {
+    p.update();
+    p.show();
+  }
+
+  // glow around cursor
+  noFill();
+  stroke(0, 0, 100, 30);
+  strokeWeight(1);
+  circle(mouseX, mouseY, 60);
+}
+
+function mousePressed() {
+  // spawn a burst of 60 particles at click location
+  for (let i = 0; i < 60; i++) {
+    let p = new Particle(mouseX, mouseY);
+    p.vel = p5.Vector.random2D().mult(random(2, 8));
+    particles.push(p);
+  }
+  // cap total to avoid slowdown
+  if (particles.length > 1200) particles.splice(0, particles.length - 1200);
+}
+
+class Particle {
+  constructor(x, y) {
+    this.pos = createVector(x, y);
+    this.vel = p5.Vector.random2D().mult(random(0.3, 1.2));
+    this.acc = createVector();
+    this.size = random(1.5, 4);
+    this.hue = random(200, 280); // base blues/purples
+  }
+
+  update() {
+    // Reset acceleration each frame
+    this.acc.set(0, 0);
+
+    // --- Cursor repulsion ---
+    let mouse = createVector(mouseX, mouseY);
+    let diff = p5.Vector.sub(this.pos, mouse);
+    let dist = diff.mag();
+    if (dist < 150 && dist > 1) {
+      // force gets stronger as we get closer (1/dist)
+      let strength = map(dist, 1, 150, 35, 0);
+      diff.normalize().mult(strength);
+      this.acc.add(diff);
+    }
+
+    // --- Gentle drift back to center with weak gravity ---
+    let center = createVector(width / 2, height / 2);
+    let toCenter = p5.Vector.sub(center, this.pos);
+    toCenter.normalize().mult(0.03);
+    this.acc.add(toCenter);
+
+    // --- Tiny noise jitter for organic motion ---
+    this.acc.add(p5.Vector.random2D().mult(0.08));
+
+    // Integrate
+    this.vel.add(this.acc);
+    this.vel.mult(0.96); // friction
+    this.vel.limit(6);
+    this.pos.add(this.vel);
+
+    // Wrap edges
+    if (this.pos.x < -10) this.pos.x = width + 10;
+    if (this.pos.x > width + 10) this.pos.x = -10;
+    if (this.pos.y < -10) this.pos.y = height + 10;
+    if (this.pos.y > height + 10) this.pos.y = -10;
+  }
+
+  show() {
+    let speed = this.vel.mag();
+    // Faster = warmer hue (blue -> pink -> gold)
+    let h = map(speed, 0, 6, 240, 40);
+    let l = map(speed, 0, 6, 55, 80);
+    fill(h, 90, l, 80);
+    circle(this.pos.x, this.pos.y, this.size);
+
+    // bright core
+    fill(h, 100, 95, 60);
+    circle(this.pos.x, this.pos.y, this.size * 0.4);
+  }
+}
+</script>
+</body>
+</html>
