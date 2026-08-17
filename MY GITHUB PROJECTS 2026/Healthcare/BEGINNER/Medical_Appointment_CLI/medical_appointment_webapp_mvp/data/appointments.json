@@ -124,6 +124,15 @@
       "reason": "Routine consultation",
       "appointment_status": "CANCELLED",
       "created_at": "2026-08-17T14:32:41"
+    },
+    {
+      "id": "APT-05376092",
+      "slot_id": "SLOT-002",
+      "patient_name": "CECRR",
+      "patient_email": "xxw@dcd.com",
+      "reason": "WDDDCE",
+      "appointment_status": "CANCELLED",
+      "created_at": "2026-08-17T14:53:13"
     }
   ]
 }
