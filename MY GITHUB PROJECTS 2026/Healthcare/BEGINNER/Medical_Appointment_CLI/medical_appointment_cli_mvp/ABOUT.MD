@@ -1,0 +1,1 @@
+# Medical Appointment CLI: Basic Python app to book/cancel slots.

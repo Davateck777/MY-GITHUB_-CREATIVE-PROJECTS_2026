@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Visual 3 — Perlin Flow Field</title>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<style>
+  body { margin: 0; background: #02020a; display: flex; flex-direction: column; align-items: center; font-family: system-ui, sans-serif; color: #e8e8f0;}
+  h2 { margin-top: 14px; font-weight: 500; letter-spacing: 1px;}
+  canvas { border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);}
+  p.hint { opacity: 0.6; font-size: 13px; margin: 8px 0 20px;}
+</style>
+</head>
+<body>
+<h2>VISUAL 03 — PERLIN NOISE FLOW FIELD</h2>
+<p class="hint">Watch particles drift through an invisible vector field &middot; Press any key to reset</p>
+<script>
+/* ============================================================
+   VISUAL 3 : PERLIN NOISE FLOW FIELD (p5.js)
+   ------------------------------------------------------------
+   How it works:
+   1. We divide the canvas into an invisible grid. At each grid
+      cell we compute a direction using Perlin noise (smooth,
+      natural randomness). That forms a "flow field" of vectors.
+   2. Thousands of lightweight particles are dropped onto the
+      field. Each frame a particle looks up the vector under its
+      position and steers to follow it, leaving a colored trail.
+   3. We slowly offset the noise inputs over time (the "z" axis
+      of noise()), so the field gently breathes and shifts.
+   4. HSL color is based on the particle's heading angle, so the
+      trails create a rainbow of silky flowing strands.
+   ============================================================ */
+
+const SCALE   = 12;     // grid cell size
+const PARTICLES = 1800;
+let cols, rows;
+let field = [];
+let particles = [];
+let zOff = 0;           // time dimension for noise
+
+function setup() {
+  createCanvas(800, 500);
+  colorMode(HSL, 360, 100, 100, 100);
+  cols = floor(width / SCALE);
+  rows = floor(height / SCALE);
+
+  background(5);
+
+  for (let i = 0; i < PARTICLES; i++) {
+    particles.push({
+      pos: createVector(random(width), random(height)),
+      prev: createVector(0, 0),
+      vel: p5.Vector.random2D(),
+      hue: random(360)
+    });
+  }
+}
+
+function draw() {
+  // ----------- Update flow field -----------
+  let xOff = 0;
+  for (let x = 0; x < cols; x++) {
+    let yOff = 0;
+    for (let y = 0; y < rows; y++) {
+      // Convert noise value -> angle in radians
+      let angle = noise(xOff, yOff, zOff) * TWO_PI * 2;
+      field[x + y * cols] = p5.Vector.fromAngle(angle).setMag(1);
+      yOff += 0.15;
+    }
+    xOff += 0.15;
+  }
+  zOff += 0.004; // advance noise "time"
+
+  // ----------- Update & draw particles -----------
+  for (let p of particles) {
+    p.prev.set(p.pos.x, p.pos.y);
+
+    // Find which grid cell the particle sits in
+    let ix = constrain(floor(p.pos.x / SCALE), 0, cols - 1);
+    let iy = constrain(floor(p.pos.y / SCALE), 0, rows - 1);
+    let force = field[ix + iy * cols];
+
+    p.vel.add(force).mult(0.96).limit(2.2);
+    p.pos.add(p.vel);
+
+    // Wrap edges
+    if (p.pos.x < 0)   { p.pos.x = width;  p.prev.x = p.pos.x; }
+    if (p.pos.x > width)  { p.pos.x = 0;   p.prev.x = p.pos.x; }
+    if (p.pos.y < 0)   { p.pos.y = height; p.prev.y = p.pos.y; }
+    if (p.pos.y > height) { p.pos.y = 0;   p.prev.y = p.pos.y; }
+
+    // Color by heading angle + slight alpha for layering
+    let h = (p.vel.heading() * 180 / PI + 180); // 0..360
+    stroke(h, 85, 60, 35);
+    strokeWeight(1);
+    line(p.prev.x, p.prev.y, p.pos.x, p.pos.y);
+  }
+}
+
+function keyPressed() {
+  background(5);
+  zOff = random(1000);
+}
+</script>
+</body>
+</html>

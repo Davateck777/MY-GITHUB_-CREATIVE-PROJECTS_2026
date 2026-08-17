@@ -1,0 +1,110 @@
+{
+  "slots": [
+    {
+      "id": "SLOT-001",
+      "provider": "Dr. Ada Okafor",
+      "specialty": "General Practice",
+      "starts_at": "2026-08-18T09:00",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-002",
+      "provider": "Dr. Tunde Bello",
+      "specialty": "Pediatrics",
+      "starts_at": "2026-08-18T10:00",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-003",
+      "provider": "Dr. Amara Nwosu",
+      "specialty": "Dermatology",
+      "starts_at": "2026-08-18T11:30",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-004",
+      "provider": "Dr. Ada Okafor",
+      "specialty": "General Practice",
+      "starts_at": "2026-08-19T09:00",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-005",
+      "provider": "Dr. Tunde Bello",
+      "specialty": "Pediatrics",
+      "starts_at": "2026-08-19T10:00",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-006",
+      "provider": "Dr. Amara Nwosu",
+      "specialty": "Dermatology",
+      "starts_at": "2026-08-19T11:30",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-007",
+      "provider": "Dr. Ada Okafor",
+      "specialty": "General Practice",
+      "starts_at": "2026-08-20T09:00",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-008",
+      "provider": "Dr. Tunde Bello",
+      "specialty": "Pediatrics",
+      "starts_at": "2026-08-20T10:00",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-009",
+      "provider": "Dr. Amara Nwosu",
+      "specialty": "Dermatology",
+      "starts_at": "2026-08-20T11:30",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-010",
+      "provider": "Dr. Ada Okafor",
+      "specialty": "General Practice",
+      "starts_at": "2026-08-21T09:00",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-011",
+      "provider": "Dr. Tunde Bello",
+      "specialty": "Pediatrics",
+      "starts_at": "2026-08-21T10:00",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-012",
+      "provider": "Dr. Amara Nwosu",
+      "specialty": "Dermatology",
+      "starts_at": "2026-08-21T11:30",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-013",
+      "provider": "Dr. Ada Okafor",
+      "specialty": "General Practice",
+      "starts_at": "2026-08-24T09:00",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-014",
+      "provider": "Dr. Tunde Bello",
+      "specialty": "Pediatrics",
+      "starts_at": "2026-08-24T10:00",
+      "duration_minutes": 30
+    },
+    {
+      "id": "SLOT-015",
+      "provider": "Dr. Amara Nwosu",
+      "specialty": "Dermatology",
+      "starts_at": "2026-08-24T11:30",
+      "duration_minutes": 30
+    }
+  ],
+  "appointments": []
+}

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Book and cancel medical appointments.">
+  <title>CareDesk — Medical Appointments</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="CareDesk home">
+      <span class="brand-mark">+</span>
+      <span><strong>Care</strong>Desk</span>
+    </a>
+    <div class="topbar-right">
+      <span class="service-status"><i></i> Appointment service online</span>
+      <button id="refresh-btn" class="outline-btn" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">MEDICAL APPOINTMENTS · MVP</p>
+        <h1>A calmer way to manage your next visit.</h1>
+        <p class="hero-text">Browse open slots, reserve an appointment, and cancel when plans change — all in one simple desk.</p>
+      </div>
+      <div class="hero-note">
+        <span class="hero-note-label">TODAY'S FLOW</span>
+        <strong>Find a slot<br>→ Book → Attend</strong>
+        <small>Demo environment. Do not enter real patient data.</small>
+      </div>
+    </section>
+
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <section class="steps" aria-label="Appointment workflow">
+      <div class="step active"><b>01</b><span>Find a slot</span><small>Browse availability</small></div>
+      <div class="step"><b>02</b><span>Book</span><small>Reserve a time</small></div>
+      <div class="step"><b>03</b><span>View</span><small>Check visits</small></div>
+      <div class="step"><b>04</b><span>Cancel</span><small>Release a slot</small></div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="card slots-card">
+        <div class="card-header">
+          <div><p class="eyebrow">AVAILABLE SLOTS</p><h2>Find your appointment</h2></div>
+          <span id="slot-count" class="count-pill">0 slots</span>
+        </div>
+        <form id="filter-form" class="filters">
+          <label>Date<input id="filter-date" type="date"></label>
+          <label>Specialty
+            <select id="filter-specialty">
+              <option value="">All specialties</option>
+              <option>General Practice</option>
+              <option>Pediatrics</option>
+              <option>Dermatology</option>
+            </select>
+          </label>
+          <button class="primary-btn" type="submit">Find slots</button>
+        </form>
+        <div id="slots-list" class="slots-list" aria-live="polite"></div>
+      </article>
+
+      <aside class="card visits-card">
+        <div class="card-header">
+          <div><p class="eyebrow">MY VISITS</p><h2>Appointments</h2></div>
+          <span class="spark" aria-hidden="true">✦</span>
+        </div>
+        <form id="appointments-form" class="email-form">
+          <label for="patient-email">Patient email</label>
+          <div class="email-row"><input id="patient-email" type="email" autocomplete="email" placeholder="demo@example.com" required><button class="outline-btn" type="submit">View</button></div>
+        </form>
+        <div id="appointments-list" class="appointments-list"><div class="empty-state"><span>↗</span><p>Enter an email to view appointments.</p></div></div>
+      </aside>
+    </section>
+  </main>
+
+  <dialog id="booking-dialog" class="dialog">
+    <form id="booking-form" class="dialog-card">
+      <button class="close-btn" type="button" data-close-dialog aria-label="Close">×</button>
+      <p class="eyebrow">RESERVE A VISIT</p>
+      <h2>Book appointment</h2>
+      <div id="selected-slot" class="selected-slot"></div>
+      <input id="booking-slot" type="hidden">
+      <label>Patient name<input id="patient-name" type="text" maxlength="100" placeholder="Demo Patient" required></label>
+      <label>Patient email<input id="booking-email" type="email" placeholder="demo@example.com" required></label>
+      <label>Reason <small>optional</small><textarea id="booking-reason" rows="3" maxlength="250" placeholder="Routine consultation"></textarea></label>
+      <div class="dialog-actions"><button class="outline-btn" type="button" data-close-dialog>Back</button><button class="primary-btn" type="submit">Confirm booking</button></div>
+    </form>
+  </dialog>
+
+  <footer class="footer"><span>CareDesk · Medical Appointment CLI packaged as a WebApp</span><span>Demo only — no real patient data</span></footer>
+  <script src="app.js" defer></script>
+</body>
+</html>
