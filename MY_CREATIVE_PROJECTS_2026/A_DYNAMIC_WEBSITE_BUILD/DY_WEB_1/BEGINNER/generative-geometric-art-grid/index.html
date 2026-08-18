@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1014">
+  <title>Geometria — Generative Geometric Art Grid</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="wordmark" href="./">
+        <span class="wordmark-glyph"><i></i><i></i><i></i></span>
+        <span>GEOMETRIA</span>
+      </a>
+      <div class="topbar-center">
+        <span class="pulse-dot"></span>
+        <span>GENERATIVE STUDIO</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="hotkey">SPACE <span>new pattern</span></span>
+        <button id="download-btn" class="icon-button" type="button" aria-label="Download artwork" title="Download artwork">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="art-stage" aria-label="Generative artwork canvas">
+        <div class="stage-meta stage-meta-top">
+          <span>CANVAS / 01</span>
+          <span id="render-status">READY</span>
+        </div>
+        <canvas id="art-canvas" aria-label="Generated geometric art"></canvas>
+        <div class="stage-meta stage-meta-bottom">
+          <span id="grid-readout">12 × 18 GRID</span>
+          <span id="seed-readout">SEED —</span>
+        </div>
+      </section>
+
+      <aside class="control-panel">
+        <div class="panel-intro">
+          <p class="eyebrow">PATTERN GENERATOR</p>
+          <h1>Order,<br><em>with a little chaos.</em></h1>
+          <p class="intro-copy">Compose a living grid of geometric forms. Every new seed is a one-of-one composition.</p>
+        </div>
+
+        <button id="randomize-btn" class="generate-button" type="button">
+          <span class="generate-icon">✦</span>
+          <span><strong>Generate pattern</strong><small>New geometry + color field</small></span>
+          <span class="generate-arrow">↗</span>
+        </button>
+
+        <div class="control-section">
+          <div class="section-label"><span>GRID STRUCTURE</span><span id="grid-size-value">12 × 18</span></div>
+          <label class="range-label" for="rows-range"><span>Rows</span><input id="rows-range" type="range" min="4" max="24" value="12"><output id="rows-output">12</output></label>
+          <label class="range-label" for="columns-range"><span>Columns</span><input id="columns-range" type="range" min="4" max="30" value="18"><output id="columns-output">18</output></label>
+          <label class="range-label" for="gap-range"><span>Cell gap</span><input id="gap-range" type="range" min="0" max="12" value="4"><output id="gap-output">4</output></label>
+        </div>
+
+        <div class="control-section">
+          <div class="section-label"><span>COLOR FIELD</span><span class="color-chip" id="color-chip"></span></div>
+          <label class="range-label" for="hue-range"><span>Hue rotation</span><input id="hue-range" type="range" min="0" max="360" value="190"><output id="hue-output">190°</output></label>
+          <label class="range-label" for="spread-range"><span>Spectrum spread</span><input id="spread-range" type="range" min="0" max="100" value="72"><output id="spread-output">72%</output></label>
+          <label class="range-label" for="light-range"><span>Lightness</span><input id="light-range" type="range" min="25" max="75" value="55"><output id="light-output">55%</output></label>
+        </div>
+
+        <div class="control-section">
+          <div class="section-label"><span>FORM LANGUAGE</span></div>
+          <div class="style-grid" role="group" aria-label="Shape style">
+            <button class="style-button active" data-style="mix" type="button"><span class="style-preview style-mix"></span>Mix</button>
+            <button class="style-button" data-style="squares" type="button"><span class="style-preview style-squares"></span>Squares</button>
+            <button class="style-button" data-style="circles" type="button"><span class="style-preview style-circles"></span>Circles</button>
+            <button class="style-button" data-style="triangles" type="button"><span class="style-preview style-triangles"></span>Triangles</button>
+          </div>
+        </div>
+
+        <div class="panel-footer">
+          <label class="toggle-row"><span><strong>Ambient motion</strong><small>Slowly rotate the color field</small></span><input id="motion-toggle" type="checkbox"><i class="toggle-track"></i></label>
+          <p class="footer-note"><span>⌁</span> Built with loops, HSL + Math.random()</p>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

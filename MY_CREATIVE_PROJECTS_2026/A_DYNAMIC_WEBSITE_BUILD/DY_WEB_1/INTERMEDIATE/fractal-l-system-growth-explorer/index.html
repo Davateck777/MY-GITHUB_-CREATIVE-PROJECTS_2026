@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11130f">
+  <title>Understory — Fractal &amp; L-System Growth Explorer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Understory home">
+        <span class="brand-symbol"><i></i><i></i><i></i></span>
+        <span>UNDERSTORY</span>
+      </a>
+      <div class="topbar-center"><span class="live-dot"></span><span>L-SYSTEM GROWTH EXPLORER</span></div>
+      <div class="topbar-actions">
+        <span class="shortcut">SPACE <small>pause / grow</small></span>
+        <button id="download-btn" class="icon-button" type="button" title="Download growth" aria-label="Download growth">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="growth-stage" aria-label="Animated fractal growth canvas">
+        <div class="stage-label stage-label-top"><span>SPECIMEN / 01</span><span id="stage-state">GERMINATING</span></div>
+        <canvas id="growth-canvas" aria-label="Animated L-system tree"></canvas>
+        <div class="stage-label stage-label-bottom"><span id="segment-readout">0 SEGMENTS</span><span id="growth-readout">0% GROWN</span></div>
+        <div class="wind-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+      </section>
+
+      <aside class="control-panel">
+        <div class="panel-intro">
+          <p class="eyebrow">FRACTAL BOTANY</p>
+          <h1>Let it<br><em>branch out.</em></h1>
+          <p class="intro-copy">A small set of rules can become a living forest. Tune the grammar, then watch the form find its way.</p>
+        </div>
+
+        <div class="preset-row">
+          <div><span class="section-label">SPECIES</span><strong id="preset-name">Classic tree</strong></div>
+          <select id="preset-select" aria-label="Choose a growth preset">
+            <option value="tree">Classic tree</option>
+            <option value="bush">Wild bush</option>
+            <option value="fern">Fern spiral</option>
+            <option value="coral">Coral fan</option>
+          </select>
+        </div>
+
+        <button id="grow-btn" class="grow-button" type="button">
+          <span class="grow-icon">⌁</span>
+          <span><strong>Start new growth</strong><small>Re-seed the organism</small></span>
+          <span class="grow-arrow">↗</span>
+        </button>
+
+        <div class="control-section">
+          <div class="section-heading"><span>BRANCHING RULES</span><span id="depth-value">Depth 5</span></div>
+          <label class="range-row" for="depth-range"><span>Iterations</span><input id="depth-range" type="range" min="2" max="7" value="5"><output id="depth-output">5</output></label>
+          <label class="range-row" for="angle-range"><span>Branch angle</span><input id="angle-range" type="range" min="8" max="48" value="25"><output id="angle-output">25°</output></label>
+          <label class="range-row" for="length-range"><span>Length decay</span><input id="length-range" type="range" min="55" max="86" value="72"><output id="length-output">72%</output></label>
+          <label class="range-row" for="random-range"><span>Organic drift</span><input id="random-range" type="range" min="0" max="35" value="13"><output id="random-output">13%</output></label>
+        </div>
+
+        <div class="control-section">
+          <div class="section-heading"><span>ATMOSPHERE</span><span id="wind-value">Wind 28</span></div>
+          <label class="range-row" for="wind-range"><span>Wind strength</span><input id="wind-range" type="range" min="0" max="70" value="28"><output id="wind-output">28%</output></label>
+          <label class="range-row" for="wind-speed-range"><span>Wind rhythm</span><input id="wind-speed-range" type="range" min="1" max="20" value="7"><output id="wind-speed-output">7</output></label>
+          <label class="toggle-row"><span><strong>Wind dynamics</strong><small>Move the canopy with the air</small></span><input id="wind-toggle" type="checkbox" checked><i class="toggle-track"></i></label>
+        </div>
+
+        <div class="control-section palette-section">
+          <div class="section-heading"><span>PALETTE</span><span class="palette-dots"><i></i><i></i><i></i><i></i></span></div>
+          <div class="palette-grid" role="group" aria-label="Choose a palette">
+            <button class="palette-button active" data-palette="moss" type="button"><span></span>Moss</button>
+            <button class="palette-button" data-palette="sunset" type="button"><span></span>Ember</button>
+            <button class="palette-button" data-palette="ocean" type="button"><span></span>Tide</button>
+          </div>
+        </div>
+
+        <div class="panel-footer"><p><span>↳</span> recursive rules · turtle graphics · wind</p></div>
+      </aside>
+    </main>
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>

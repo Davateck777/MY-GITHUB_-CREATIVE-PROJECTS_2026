@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#06070c">
+  <title>SONORUM — Audio-Reactive Particle Universe</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="universe-canvas" aria-label="Audio-reactive particle universe"></canvas>
+  <div class="vignette"></div>
+  <div class="scanlines"></div>
+
+  <header class="topbar">
+    <a class="brand" href="./"><span class="brand-mark"><i></i><i></i><i></i></span><span>SONORUM</span></a>
+    <div class="topbar-center"><span class="signal-dot"></span><span>GPGPU / AUDIO FIELD</span></div>
+    <div class="topbar-right"><span id="runtime-state">SHADER READY</span><span class="version">v.01</span></div>
+  </header>
+
+  <main class="interface">
+    <section class="intro-block">
+      <p class="eyebrow">REAL-TIME PARTICLE UNIVERSE</p>
+      <h1>Listen to<br><em>the infinite.</em></h1>
+      <p class="intro-copy">120,000 particles calculated on the GPU, sculpted by the frequency field of your microphone.</p>
+      <button id="mic-button" class="mic-button" type="button"><span class="mic-icon">◉</span><span><strong>Enable microphone</strong><small>Permission required for live audio</small></span><span class="arrow">↗</span></button>
+      <p id="mic-message" class="microcopy">Your audio stays in this browser session.</p>
+    </section>
+
+    <aside class="control-card">
+      <div class="card-head"><span>FIELD CONTROLS</span><span id="input-status" class="status-pill">DEMO SIGNAL</span></div>
+      <div class="meter-block"><div class="meter-label"><span>INPUT ENERGY</span><output id="energy-output">0%</output></div><div class="meter"><i id="energy-meter"></i></div><div class="band-readouts"><span>BASS <b id="bass-output">0</b></span><span>MID <b id="mid-output">0</b></span><span>AIR <b id="air-output">0</b></span></div></div>
+      <label class="range-row" for="sensitivity-range"><span>Sensitivity</span><input id="sensitivity-range" type="range" min="40" max="220" value="100"><output id="sensitivity-output">100%</output></label>
+      <label class="range-row" for="motion-range"><span>Orbit speed</span><input id="motion-range" type="range" min="0" max="100" value="42"><output id="motion-output">42%</output></label>
+      <div class="control-divider"></div>
+      <div class="card-head mode-label"><span>CHROMATIC FIELD</span></div>
+      <div class="palette-grid" role="group" aria-label="Particle palette">
+        <button class="palette-button active" data-palette="aurora" type="button"><i></i> Aurora</button>
+        <button class="palette-button" data-palette="plasma" type="button"><i></i> Plasma</button>
+        <button class="palette-button" data-palette="deep" type="button"><i></i> Deep sea</button>
+      </div>
+      <label class="toggle-row"><span><strong>Audio field</strong><small>Let frequencies disturb space</small></span><input id="audio-field-toggle" type="checkbox" checked><i class="toggle-track"></i></label>
+      <label class="toggle-row"><span><strong>Auto orbit</strong><small>Rotate the universe slowly</small></span><input id="orbit-toggle" type="checkbox" checked><i class="toggle-track"></i></label>
+      <button id="pause-button" class="pause-button" type="button"><span>Ⅱ</span> Pause universe</button>
+    </aside>
+
+    <div class="bottom-stats">
+      <div><span>PARTICLES</span><strong id="particle-count">120,000</strong></div>
+      <div><span>COMPUTE</span><strong>VERTEX SHADER</strong></div>
+      <div><span>FPS</span><strong id="fps-output">60</strong></div>
+      <div class="bottom-hint"><span>MOVE POINTER TO BEND THE FIELD</span><span class="key-hint">SPACE <small>pause</small></span></div>
+    </div>
+  </main>
+
+  <div id="unsupported" class="unsupported" hidden>
+    <div><p class="eyebrow">WEBGL2 REQUIRED</p><h2>Your browser cannot render this universe.</h2><p>Please use a modern browser with WebGL2 support.</p></div>
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>
