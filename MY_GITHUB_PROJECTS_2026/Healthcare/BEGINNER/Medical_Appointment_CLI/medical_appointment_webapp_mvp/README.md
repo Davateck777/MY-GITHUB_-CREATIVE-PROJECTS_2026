@@ -33,7 +33,7 @@ medical_appointment_webapp_mvp/
 
 ```bash
 cd medical_appointment_webapp_mvp
-python3 server.py
+python server.py
 ```
 
 Open:
