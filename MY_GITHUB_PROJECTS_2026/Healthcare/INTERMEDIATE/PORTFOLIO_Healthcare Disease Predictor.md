@@ -472,17 +472,17 @@ These should not be added until the CLI MVP is complete.
 
 The MVP is complete when:
 
-- `[ ]` A diabetes or heart-disease CSV can be loaded.
-- `[ ]` The dataset schema is validated.
-- `[ ]` A reproducible Scikit-learn model can be trained.
-- `[ ]` Preprocessing and modeling are saved together.
-- `[ ]` Evaluation metrics are generated.
-- `[ ]` A saved model can make a new prediction.
-- `[ ]` Invalid input returns a clear error.
-- `[ ]` Tests pass.
-- `[ ]` README documentation is complete.
-- `[ ]` Safety limitations are displayed with every prediction.
-- `[ ]` The application does not present results as medical diagnoses.
+- `[ ]` A diabetes or heart-disease CSV can be loaded. ✔
+- `[ ]` The dataset schema is validated. ✔
+- `[ ]` A reproducible Scikit-learn model can be trained. ✔
+- `[ ]` Preprocessing and modeling are saved together. ✔
+- `[ ]` Evaluation metrics are generated. 🔁
+- `[ ]` A saved model can make a new prediction. 🔁
+- `[ ]` Invalid input returns a clear error.✔
+- `[ ]` Tests pass.✔
+- `[ ]` README documentation is complete. ✔
+- `[ ]` Safety limitations are displayed with every prediction.✔
+- `[ ]` The application does not present results as medical diagnoses.✔
 
 I will wait for your command:
 
