@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- PAGE METADATA: Provides responsive layout, title, and health-focused browser labels. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0e1519">
+  <title>Clinica — Disease Predictor</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <!-- APP HEADER: Establishes the product identity and reports whether the local service is available. -->
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Clinica home"><span class="brand-mark">+</span><span><strong>CLINICA</strong><small>RESEARCH TOOLS</small></span></a>
+    <div class="topbar-center"><span class="status-dot"></span><span>MODEL SERVICE</span><b id="service-state">CHECKING</b></div>
+    <div class="topbar-right"><span>SCREENING PROTOTYPE</span><span class="version">v0.1</span></div>
+  </header>
+
+  <!-- HERO SECTION: Explains the intended educational and research purpose before data entry. -->
+  <main class="page-shell">
+    <!-- NOTIFICATION BANNER: Surfaces transient API success or validation error messages. -->
+    <div id="notice" class="notice" hidden></div>
+
+    <section class="hero">
+      <div>
+        <p class="eyebrow">PREDICTIVE HEALTH RESEARCH</p>
+        <h1>Signals worth<br><em>looking closer at.</em></h1>
+        <p class="hero-copy">A transparent Scikit-learn baseline for exploring patterns in diabetes and heart-disease datasets.</p>
+      </div>
+      <div class="hero-callout"><span>MODEL NOTE</span><strong>Probability is a signal,<br>not a diagnosis.</strong><small>Clinical context always comes first.</small></div>
+    </section>
+
+    <!-- SAFETY NOTICE: Keeps the non-diagnostic boundary visible in the primary workflow. -->
+    <div class="safety-notice"><span>!</span><p><strong>Educational use only.</strong> This predictor is not a medical device and must not be used to diagnose, treat, or make decisions about a real person.</p></div>
+
+    <!-- MODEL WORKSPACE: Connects dataset selection, feature input, and prediction output. -->
+    <section class="workspace-grid">
+      <article class="panel input-panel">
+        <div class="panel-heading"><div><p class="eyebrow">01 / INPUT</p><h2>Choose a model</h2></div><span class="panel-number">⌁</span></div>
+        <label class="model-select-label" for="dataset-select">Prediction task<select id="dataset-select"></select></label>
+        <div id="dataset-info" class="dataset-info"><span class="loading-dot"></span> Loading model metadata…</div>
+        <div class="feature-heading"><span>FEATURE VALUES</span><span id="feature-count">—</span></div>
+        <form id="prediction-form">
+          <div id="feature-grid" class="feature-grid"></div>
+          <button id="predict-button" class="predict-button" type="submit"><span>Run prediction</span><b>→</b></button>
+        </form>
+      </article>
+
+      <article class="panel result-panel">
+        <div class="panel-heading"><div><p class="eyebrow">02 / OUTPUT</p><h2>Risk signal</h2></div><span id="result-status" class="result-status">WAITING</span></div>
+        <div id="empty-result" class="empty-result"><div class="empty-icon">⌁</div><h3>Your result will appear here.</h3><p>Choose a dataset, enter its feature values, then run the model.</p></div>
+        <div id="prediction-result" class="prediction-result" hidden>
+          <div class="result-hero"><span id="result-label">Estimated positive-class probability</span><strong id="probability">—</strong><div class="probability-track"><i id="probability-bar"></i></div></div>
+          <div class="result-grid"><div><span>DISPLAY BAND</span><strong id="risk-band">—</strong></div><div><span>PREDICTED CLASS</span><strong id="predicted-class">—</strong></div><div><span>MODEL</span><strong id="model-type">—</strong></div><div><span>DATASET</span><strong id="dataset-label">—</strong></div></div>
+          <div class="result-disclaimer"><span>↳</span><p id="result-disclaimer">—</p></div>
+        </div>
+      </article>
+    </section>
+
+    <!-- METHODOLOGY STRIP: Makes the ML pipeline understandable to non-ML users. -->
+    <section class="method-strip"><div><span>PREPROCESS</span><strong>Impute + scale</strong></div><div><span>ESTIMATOR</span><strong>Logistic regression</strong></div><div><span>OUTPUT</span><strong>Probability + class</strong></div><div><span>VALIDATION</span><strong id="trained-at">Model metadata loading</strong></div></section>
+  </main>
+
+  <!-- FOOTER: Repeats the data-handling boundary and keeps the demo context explicit. -->
+  <footer class="footer"><span>Clinica · Disease Predictor MVP</span><span>Do not enter real patient information.</span></footer>
+  <script src="/app.js" defer></script>
+</body>
+</html>
