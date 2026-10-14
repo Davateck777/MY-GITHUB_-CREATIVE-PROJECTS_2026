@@ -1,0 +1,5 @@
+<!-- COLORS: Legacy resource colors used by the Android theme shell. -->
+<resources>
+    <color name="bookkeeper_teal">#0B8177</color>
+    <color name="bookkeeper_navy">#152D3A</color>
+</resources>

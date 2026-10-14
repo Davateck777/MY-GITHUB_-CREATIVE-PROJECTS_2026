@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perlin Noise Flow Field</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #030712;
+      color: #f9fafb;
+      overflow: hidden;
+      user-select: none;
+    }
+    
+    code, pre {
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* Custom Glassmorphism UI Panels */
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-button {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .glass-button:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Custom Scrollbar for Drawer/Code Views */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.5);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.8);
+    }
+
+    /* Input Range Custom Styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      height: 6px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+      transition: transform 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+  </style>
+</head>
+<body class="relative w-screen h-screen overflow-hidden bg-slate-950 text-slate-100">
+
+  <!-- Main Particle Flow Canvas -->
+  <canvas id="flow-canvas" class="absolute inset-0 w-full h-full block z-0 cursor-crosshair"></canvas>
+
+  <!-- Header Bar -->
+  <header class="absolute top-0 left-0 right-0 z-10 px-4 sm:px-6 py-4 flex items-center justify-between pointer-events-none">
+    <!-- Title & Brand -->
+    <div class="flex items-center gap-3 pointer-events-auto">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+        <i class="fa-solid fa-wind text-lg"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base sm:text-lg leading-tight tracking-wide bg-gradient-to-r from-slate-100 via-cyan-200 to-purple-400 bg-clip-text text-transparent">
+          Perlin Noise Flow Field
+        </h1>
+        <p class="text-xs text-slate-400 hidden sm:block">Vector Field Simulation powered by 3D Noise Math</p>
+      </div>
+    </div>
+
+    <!-- Action Toolbar -->
+    <div class="flex items-center gap-2 pointer-events-auto">
+      <button id="btn-grid" onclick="toggleVectorGrid()" class="glass-button px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white flex items-center gap-1.5" title="Toggle Vector Grid Overlay">
+        <i id="icon-grid" class="fa-solid fa-border-all text-slate-400"></i>
+        <span class="hidden md:inline">Vector Grid</span>
+      </button>
+
+      <button onclick="toggleInspector()" class="glass-button px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white flex items-center gap-1.5" title="Inspect Code & Math">
+        <i class="fa-solid fa-code text-cyan-400"></i>
+        <span class="hidden md:inline">Math & Code</span>
+      </button>
+
+      <button onclick="clearCanvas()" class="glass-button px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white flex items-center gap-1.5" title="Clear Trails">
+        <i class="fa-solid fa-rotate-right text-amber-400"></i>
+        <span class="hidden md:inline">Clear Canvas</span>
+      </button>
+
+      <button onclick="toggleSettings()" class="glass-button px-3.5 py-2 rounded-xl text-xs font-medium bg-cyan-500/20 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/30 flex items-center gap-1.5 shadow-lg shadow-cyan-500/10">
+        <i class="fa-solid fa-sliders"></i>
+        <span class="hidden sm:inline">Controls</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats HUD -->
+  <div class="absolute top-20 left-4 sm:left-6 z-10 glass-panel px-3 py-2 rounded-xl text-xs text-slate-300 flex items-center gap-4 pointer-events-none shadow-xl border-slate-800">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span id="hud-fps" class="font-mono text-emerald-400 font-semibold">60 FPS</span>
+    </div>
+    <div class="h-3 w-px bg-slate-700"></div>
+    <div>
+      <span class="text-slate-400">Particles: </span>
+      <span id="hud-count" class="font-mono text-cyan-400 font-semibold">5000</span>
+    </div>
+    <div class="h-3 w-px bg-slate-700 hidden sm:block"></div>
+    <div class="hidden sm:block">
+      <span class="text-slate-400">Noise Scale: </span>
+      <span id="hud-scale" class="font-mono text-slate-300">0.005</span>
+    </div>
+  </div>
+
+  <!-- Quick Preset Switcher (Bottom Center) -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 glass-panel p-1.5 rounded-2xl flex items-center gap-1 shadow-2xl border-slate-800/80 max-w-[95vw] overflow-x-auto">
+    <button onclick="applyPreset('starry')" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 whitespace-nowrap">
+      <i class="fa-solid fa-star text-xs"></i> Starry Night
+    </button>
+    <button onclick="applyPreset('vortex')" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-hurricane text-xs"></i> Cyber Vortex
+    </button>
+    <button onclick="applyPreset('aurora')" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-wind text-xs"></i> Aurora Stream
+    </button>
+    <button onclick="applyPreset('solar')" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-fire text-xs"></i> Solar Flare
+    </button>
+    <button onclick="applyPreset('silk')" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-ribbon text-xs"></i> Velvet Silk
+    </button>
+  </div>
+
+  <!-- Settings Drawer Panel -->
+  <aside id="settings-panel" class="absolute top-0 right-0 bottom-0 w-80 sm:w-96 glass-panel z-20 translate-x-full transition-transform duration-300 ease-out flex flex-col border-l border-slate-800 shadow-2xl">
+    <!-- Panel Header -->
+    <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-sliders text-cyan-400"></i>
+        <h2 class="font-bold text-slate-100 text-sm sm:text-base">Field Parameters</h2>
+      </div>
+      <button onclick="toggleSettings()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Sliders & Controls Body -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 text-xs">
+      
+      <!-- Palette Selector -->
+      <div>
+        <label class="block font-semibold text-slate-300 mb-2">Color Palette</label>
+        <select id="ctrl-palette" onchange="updateSettingsFromUI()" class="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-3 py-2 outline-none focus:border-cyan-500">
+          <option value="cyberpunk">Cyberpunk Neon (Cyan & Purple)</option>
+          <option value="starry">Van Gogh Starry Night (Deep Blue & Gold)</option>
+          <option value="aurora">Aurora Borealis (Emerald & Teal)</option>
+          <option value="solar">Solar Plasma (Amber & Crimson)</option>
+          <option value="monochrome">Monochrome Silver Glow</option>
+          <option value="rainbow">Dynamic Rainbow Spectrum</option>
+        </select>
+      </div>
+
+      <!-- Particle Count -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Particle Count</span>
+          <span id="val-count" class="font-mono text-cyan-400">5000</span>
+        </div>
+        <input type="range" id="ctrl-count" min="1000" max="15000" step="500" value="5000" onchange="updateParticleCount()" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Noise Spatial Frequency -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Noise Scale (Spatial)</span>
+          <span id="val-scale" class="font-mono text-cyan-400">0.005</span>
+        </div>
+        <input type="range" id="ctrl-scale" min="0.001" max="0.02" step="0.0005" value="0.005" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Time Evolution Speed -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Noise Evolution (Z-Drift)</span>
+          <span id="val-zspeed" class="font-mono text-cyan-400">0.0003</span>
+        </div>
+        <input type="range" id="ctrl-zspeed" min="0" max="0.0015" step="0.00005" value="0.0003" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Flow Velocity -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Particle Speed</span>
+          <span id="val-speed" class="font-mono text-cyan-400">2.5</span>
+        </div>
+        <input type="range" id="ctrl-speed" min="0.5" max="8.0" step="0.5" value="2.5" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Trail Fade / Blur opacity -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Trail Length (Fading)</span>
+          <span id="val-fade" class="font-mono text-cyan-400">0.08</span>
+        </div>
+        <input type="range" id="ctrl-fade" min="0.01" max="0.3" step="0.01" value="0.08" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Angle Multiplier / Swirl -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Vector Angle Multiplier</span>
+          <span id="val-multiplier" class="font-mono text-cyan-400">2π (Full Swirl)</span>
+        </div>
+        <input type="range" id="ctrl-multiplier" min="1" max="8" step="0.5" value="2" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Interactive Cursor Force Mode -->
+      <div>
+        <label class="block font-semibold text-slate-300 mb-2">Cursor Interaction Force</label>
+        <select id="ctrl-cursor" onchange="updateSettingsFromUI()" class="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-3 py-2 outline-none focus:border-cyan-500">
+          <option value="vortex">Vortex Swirl</option>
+          <option value="repel">Push Away (Repel)</option>
+          <option value="attract">Pull In (Attract)</option>
+          <option value="none">None (Passive Tracking)</option>
+        </select>
+      </div>
+
+      <!-- Blend Mode & Toggles -->
+      <div class="pt-2 border-t border-slate-800 space-y-3">
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-semibold text-slate-300">Additive Glow (Lighter Blend)</span>
+          <input type="checkbox" id="ctrl-glow" checked onchange="updateSettingsFromUI()" class="w-4 h-4 accent-cyan-500 rounded">
+        </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-semibold text-slate-300">Show Vector Grid Lines</span>
+          <input type="checkbox" id="ctrl-showgrid" onchange="updateSettingsFromUI()" class="w-4 h-4 accent-cyan-500 rounded">
+        </label>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- Code & Math Inspector Modal -->
+  <div id="inspector-modal" class="fixed inset-0 z-30 glass-panel bg-slate-950/80 hidden flex-col p-4 sm:p-8 overflow-hidden">
+    <div class="max-w-4xl w-full mx-auto flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-code text-cyan-400 text-lg"></i>
+          <h2 class="font-bold text-slate-100 text-base">Perlin Noise Math & Vector Engine</h2>
+        </div>
+        <button onclick="toggleInspector()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Code Inspector Tabs & Content -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-950 space-y-4">
+        <div class="text-xs text-slate-400 leading-relaxed">
+          In a <strong>Perlin Noise Flow Field</strong>, a 3D noise function maps spatial coordinates <code class="text-cyan-300">(x, y, z)</code> to a smooth continuous value between <code class="text-cyan-300">[-1, 1]</code>. This scalar value is converted into a vector direction angle:
+          <div class="my-2 p-2 bg-slate-900 rounded-lg text-emerald-400 font-mono text-center">
+            θ = PerlinNoise(x · scale, y · scale, z) × (2π · Multiplier)
+          </div>
+          Each particle samples its local vector angle $\theta$, updates its velocity vector $\vec{v} = (\cos\theta, \sin\theta)$, and steps through the grid leaving faint visual trails on canvas.
+        </div>
+        
+        <pre class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-xs text-emerald-400 overflow-x-auto leading-relaxed"><code>// 1. Calculate Perlin Noise Angle at Particle (x, y)
+const noiseVal = perlin.noise(
+  particle.x * settings.noiseScale,
+  particle.y * settings.noiseScale,
+  zTimeOffset
+);
+
+// 2. Derive Heading Angle
+const angle = noiseVal * Math.PI * 2 * settings.angleMultiplier;
+
+// 3. Compute Velocity Acceleration
+particle.vx = Math.cos(angle) * settings.speed;
+particle.vy = Math.sin(angle) * settings.speed;
+
+// 4. Update Particle Position & Boundary Wrap
+particle.x += particle.vx;
+particle.y += particle.vy;
+
+if (particle.x &lt; 0) particle.x = canvas.width;
+if (particle.x &gt; canvas.width) particle.x = 0;
+if (particle.y &lt; 0) particle.y = canvas.height;
+if (particle.y &gt; canvas.height) particle.y = 0;</code></pre>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-slate-800 bg-slate-950/50 flex items-center justify-between">
+        <span class="text-xs text-slate-400"><i class="fa-brands fa-js text-yellow-400"></i> Pure JavaScript 3D Perlin Algorithm</span>
+        <button onclick="copyInspectorCode()" class="glass-button px-3 py-1.5 rounded-xl text-xs text-cyan-300 flex items-center gap-1.5">
+          <i class="fa-regular fa-copy"></i> Copy Snippet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Pure Vanilla 3D Perlin Noise Implementation
+    class PerlinNoise {
+      constructor() {
+        this.p = new Uint8Array(512);
+        this.permutation = [
+          151,160,137,91,90,15,197,77,233,13,145,135,115,228,196,183,201,0,222,234,119,215,80,75,0,105,139,150,
+          28,119,230,133,158,19,228,19,211,209,140,34,220,132,154,121,192,238,110,8,228,8,145,9,132,143,148,155,
+          80,29,19,174,238,225,184,87,190,195,80,182,190,131,210,133,101,224,35,109,19,181,211,105,107,43,116,
+          104,8,131,164,152,1,16,1,102,128,147,20,131,71,200,192,235,22,75,215,219,224,11,218,226,135,191,128,
+          247,150,96,205,140,89,31,175,39,127,15,85,125,75,22,207,26,206,138,175,248,147,113,153,230,81,100,198,
+          161,219,83,97,228,196,199,157,18,121,114,136,10,183,34,24,198,174,188,144,154,235,138,59,203,115,137,
+          21,135,63,93,27,69,72,216,162,83,16,241,67,214,19,7,223,247,255,205,220,91,201,234,239,44,239,162,14,
+          213,204,226,211,21,180,111,121,198,118,17,61,210,147,18,167,249,103,217,64,25,90,131,9,243,30,88,206,
+          207,24,212,233,137,122,176,198,196,2,242,168,178,16,213,204,189,170,165,71,83,110,12,253,167,97,188,2,
+          243,23,227,12,246,120,68,93,121,102,118,217,143,11,139,178,115,24,182,225,123,245,40,245,188,21,12,187,
+          11,174
+        ];
+        this.init();
+      }
+
+      init() {
+        for (let i = 0; i < 256; i++) {
+          this.p[i] = this.permutation[i];
+          this.p[256 + i] = this.permutation[i];
+        }
+      }
+
+      fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+      lerp(t, a, b) { return a + t * (b - a); }
+      grad(hash, x, y, z) {
+        const h = hash & 15;
+        const u = h < 8 ? x : y;
+        const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+        return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+      }
+
+      noise(x, y, z = 0) {
+        const X = Math.floor(x) & 255;
+        const Y = Math.floor(y) & 255;
+        const Z = Math.floor(z) & 255;
+        x -= Math.floor(x);
+        y -= Math.floor(y);
+        z -= Math.floor(z);
+        const u = this.fade(x);
+        const v = this.fade(y);
+        const w = this.fade(z);
+        const A = this.p[X] + Y, AA = this.p[A] + Z, AB = this.p[A + 1] + Z;
+        const B = this.p[X + 1] + Y, BA = this.p[B] + Z, BB = this.p[B + 1] + Z;
+
+        return this.lerp(w,
+          this.lerp(v,
+            this.lerp(u, this.grad(this.p[AA], x, y, z), this.grad(this.p[BA], x - 1, y, z)),
+            this.lerp(u, this.grad(this.p[AB], x, y - 1, z), this.grad(this.p[BB], x - 1, y - 1, z))
+          ),
+          this.lerp(v,
+            this.lerp(u, this.grad(this.p[AA + 1], x, y, z - 1), this.grad(this.p[BA + 1], x - 1, y, z - 1)),
+            this.lerp(u, this.grad(this.p[AB + 1], x, y - 1, z - 1), this.grad(this.p[BB + 1], x - 1, y - 1, z - 1))
+          )
+        );
+      }
+    }
+
+    // Canvas & System Context
+    const canvas = document.getElementById('flow-canvas');
+    const ctx = canvas.getContext('2d');
+    const perlin = new PerlinNoise();
+
+    // Engine State
+    let particles = [];
+    let zTime = 0;
+    let animationFrameId = null;
+
+    // Mouse Tracking
+    const mouse = {
+      x: -1000,
+      y: -1000,
+      active: false
+    };
+
+    // System Settings & Config
+    const settings = {
+      particleCount: 5000,
+      noiseScale: 0.005,
+      zSpeed: 0.0003,
+      speed: 2.5,
+      fadeAlpha: 0.08,
+      angleMultiplier: 2,
+      palette: 'cyberpunk',
+      cursorForce: 'vortex',
+      additiveGlow: true,
+      showVectorGrid: false
+    };
+
+    // Performance FPS Monitor
+    let lastTime = performance.now();
+    let frameCount = 0;
+    let currentFps = 60;
+
+    // Color Palettes
+    const PALETTES = {
+      cyberpunk: (x, y, angle) => {
+        const hue = 180 + Math.sin(angle) * 70;
+        return `hsla(${hue}, 90%, 60%, 0.8)`;
+      },
+      starry: (x, y, angle) => {
+        const isGold = Math.sin(x * 0.01 + y * 0.01) > 0.4;
+        const hue = isGold ? 45 : 210 + Math.cos(angle) * 30;
+        return `hsla(${hue}, 95%, ${isGold ? 65 : 50}%, 0.75)`;
+      },
+      aurora: (x, y, angle) => {
+        const hue = 140 + Math.sin(angle * 2) * 45;
+        return `hsla(${hue}, 85%, 55%, 0.8)`;
+      },
+      solar: (x, y, angle) => {
+        const hue = 15 + Math.sin(angle) * 30;
+        return `hsla(${hue}, 100%, 60%, 0.8)`;
+      },
+      monochrome: (x, y, angle) => {
+        const lum = 70 + Math.sin(angle * 3) * 25;
+        return `hsla(210, 20%, ${lum}%, 0.85)`;
+      },
+      rainbow: (x, y, angle) => {
+        const hue = (angle * 180 / Math.PI + 360) % 360;
+        return `hsla(${hue}, 90%, 60%, 0.8)`;
+      }
+    };
+
+    // Flow Particle Class
+    class FlowParticle {
+      constructor() {
+        this.reset(true);
+      }
+
+      reset(randomPos = false) {
+        this.x = randomPos ? Math.random() * canvas.width : (Math.random() > 0.5 ? 0 : canvas.width);
+        this.y = randomPos ? Math.random() * canvas.height : Math.random() * canvas.height;
+        this.prevX = this.x;
+        this.prevY = this.y;
+        this.vx = 0;
+        this.vy = 0;
+        this.life = Math.random() * 200 + 100;
+        this.maxLife = this.life;
+      }
+
+      update() {
+        this.prevX = this.x;
+        this.prevY = this.y;
+
+        // Sample 3D Perlin Noise
+        const noiseVal = perlin.noise(
+          this.x * settings.noiseScale,
+          this.y * settings.noiseScale,
+          zTime
+        );
+
+        // Compute angle
+        let angle = noiseVal * Math.PI * 2 * settings.angleMultiplier;
+
+        // Apply Vector Force
+        this.vx = Math.cos(angle) * settings.speed;
+        this.vy = Math.sin(angle) * settings.speed;
+
+        // Cursor Interactive Forces
+        if (mouse.active && settings.cursorForce !== 'none') {
+          const dx = mouse.x - this.x;
+          const dy = mouse.y - this.y;
+          const dist = Math.hypot(dx, dy);
+          const maxDist = 180;
+
+          if (dist < maxDist) {
+            const force = (1 - dist / maxDist);
+            if (settings.cursorForce === 'repel') {
+              this.vx -= (dx / dist) * force * 5;
+              this.vy -= (dy / dist) * force * 5;
+            } else if (settings.cursorForce === 'attract') {
+              this.vx += (dx / dist) * force * 5;
+              this.vy += (dy / dist) * force * 5;
+            } else if (settings.cursorForce === 'vortex') {
+              this.vx += (-dy / dist) * force * 6;
+              this.vy += (dx / dist) * force * 6;
+            }
+          }
+        }
+
+        // Integrate Position
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Lifespan & Screen Wrap
+        this.life--;
+        if (this.life <= 0 || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+          this.reset(false);
+        }
+      }
+
+      draw() {
+        const colorFunc = PALETTES[settings.palette] || PALETTES.cyberpunk;
+        const angle = Math.atan2(this.vy, this.vx);
+        
+        ctx.strokeStyle = colorFunc(this.x, this.y, angle);
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(this.prevX, this.prevY);
+        ctx.lineTo(this.x, this.y);
+        ctx.stroke();
+      }
+    }
+
+    // Draw Vector Field Arrows Grid
+    function drawVectorGrid() {
+      if (!settings.showVectorGrid) return;
+
+      const gridSize = 35;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.lineWidth = 0.8;
+
+      for (let x = 0; x < canvas.width; x += gridSize) {
+        for (let y = 0; y < canvas.height; y += gridSize) {
+          const noiseVal = perlin.noise(x * settings.noiseScale, y * settings.noiseScale, zTime);
+          const angle = noiseVal * Math.PI * 2 * settings.angleMultiplier;
+          const len = 12;
+
+          const endX = x + Math.cos(angle) * len;
+          const endY = y + Math.sin(angle) * len;
+
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(endX, endY, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    function updateParticleCount() {
+      const target = settings.particleCount;
+      if (particles.length < target) {
+        for (let i = particles.length; i < target; i++) {
+          particles.push(new FlowParticle());
+        }
+      } else if (particles.length > target) {
+        particles.length = target;
+      }
+    }
+
+    // Main Render Loop
+    function animate(currentTime = performance.now()) {
+      // Calculate FPS
+      frameCount++;
+      if (currentTime - lastTime >= 1000) {
+        currentFps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+        document.getElementById('hud-fps').innerText = `${currentFps} FPS`;
+        frameCount = 0;
+        lastTime = currentTime;
+      }
+
+      // Smooth Trailing Fading Backdrop
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = `rgba(3, 7, 18, ${settings.fadeAlpha})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Set Composite Blend Mode
+      ctx.globalCompositeOperation = settings.additiveGlow ? 'lighter' : 'source-over';
+
+      // Update & Draw Particles
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+
+      // Draw Vector Grid Overlay
+      ctx.globalCompositeOperation = 'source-over';
+      drawVectorGrid();
+
+      // Advance 3D Noise Time Step
+      zTime += settings.zSpeed;
+
+      // Update HUD
+      document.getElementById('hud-count').innerText = particles.length;
+      document.getElementById('hud-scale').innerText = settings.noiseScale;
+
+      animationFrameId = requestAnimationFrame(animate);
+    }
+
+    // Apply Preset Configurations
+    function applyPreset(name) {
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.className = "preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap";
+      });
+      event.currentTarget.className = "preset-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 whitespace-nowrap";
+
+      if (name === 'starry') {
+        settings.palette = 'starry';
+        settings.particleCount = 6000;
+        settings.noiseScale = 0.004;
+        settings.zSpeed = 0.0002;
+        settings.speed = 2.2;
+        settings.fadeAlpha = 0.06;
+        settings.angleMultiplier = 2;
+        settings.additiveGlow = true;
+      } else if (name === 'vortex') {
+        settings.palette = 'cyberpunk';
+        settings.particleCount = 8000;
+        settings.noiseScale = 0.008;
+        settings.zSpeed = 0.0006;
+        settings.speed = 3.5;
+        settings.fadeAlpha = 0.12;
+        settings.angleMultiplier = 4;
+        settings.additiveGlow = true;
+      } else if (name === 'aurora') {
+        settings.palette = 'aurora';
+        settings.particleCount = 5000;
+        settings.noiseScale = 0.003;
+        settings.zSpeed = 0.0001;
+        settings.speed = 1.8;
+        settings.fadeAlpha = 0.05;
+        settings.angleMultiplier = 1.5;
+        settings.additiveGlow = true;
+      } else if (name === 'solar') {
+        settings.palette = 'solar';
+        settings.particleCount = 7000;
+        settings.noiseScale = 0.006;
+        settings.zSpeed = 0.0005;
+        settings.speed = 4.0;
+        settings.fadeAlpha = 0.09;
+        settings.angleMultiplier = 3;
+        settings.additiveGlow = true;
+      } else if (name === 'silk') {
+        settings.palette = 'monochrome';
+        settings.particleCount = 4000;
+        settings.noiseScale = 0.002;
+        settings.zSpeed = 0.0001;
+        settings.speed = 1.5;
+        settings.fadeAlpha = 0.03;
+        settings.angleMultiplier = 1;
+        settings.additiveGlow = false;
+      }
+
+      updateParticleCount();
+      syncInputsWithSettings();
+      clearCanvas();
+    }
+
+    function syncInputsWithSettings() {
+      document.getElementById('ctrl-palette').value = settings.palette;
+      document.getElementById('ctrl-count').value = settings.particleCount;
+      document.getElementById('ctrl-scale').value = settings.noiseScale;
+      document.getElementById('ctrl-zspeed').value = settings.zSpeed;
+      document.getElementById('ctrl-speed').value = settings.speed;
+      document.getElementById('ctrl-fade').value = settings.fadeAlpha;
+      document.getElementById('ctrl-multiplier').value = settings.angleMultiplier;
+      document.getElementById('ctrl-cursor').value = settings.cursorForce;
+      document.getElementById('ctrl-glow').checked = settings.additiveGlow;
+      document.getElementById('ctrl-showgrid').checked = settings.showVectorGrid;
+
+      // Update Labels
+      document.getElementById('val-count').innerText = settings.particleCount;
+      document.getElementById('val-scale').innerText = settings.noiseScale;
+      document.getElementById('val-zspeed').innerText = settings.zSpeed;
+      document.getElementById('val-speed').innerText = settings.speed;
+      document.getElementById('val-fade').innerText = settings.fadeAlpha;
+      document.getElementById('val-multiplier').innerText = `${settings.angleMultiplier}π`;
+    }
+
+    function updateSettingsFromUI() {
+      settings.palette = document.getElementById('ctrl-palette').value;
+      settings.particleCount = parseInt(document.getElementById('ctrl-count').value);
+      settings.noiseScale = parseFloat(document.getElementById('ctrl-scale').value);
+      settings.zSpeed = parseFloat(document.getElementById('ctrl-zspeed').value);
+      settings.speed = parseFloat(document.getElementById('ctrl-speed').value);
+      settings.fadeAlpha = parseFloat(document.getElementById('ctrl-fade').value);
+      settings.angleMultiplier = parseFloat(document.getElementById('ctrl-multiplier').value);
+      settings.cursorForce = document.getElementById('ctrl-cursor').value;
+      settings.additiveGlow = document.getElementById('ctrl-glow').checked;
+      settings.showVectorGrid = document.getElementById('ctrl-showgrid').checked;
+
+      const gridIcon = document.getElementById('icon-grid');
+      gridIcon.className = settings.showVectorGrid ? "fa-solid fa-border-all text-cyan-400" : "fa-solid fa-border-all text-slate-400";
+
+      document.getElementById('val-count').innerText = settings.particleCount;
+      document.getElementById('val-scale').innerText = settings.noiseScale;
+      document.getElementById('val-zspeed').innerText = settings.zSpeed;
+      document.getElementById('val-speed').innerText = settings.speed;
+      document.getElementById('val-fade').innerText = settings.fadeAlpha;
+      document.getElementById('val-multiplier').innerText = `${settings.angleMultiplier}π`;
+    }
+
+    function handleResize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      clearCanvas();
+    }
+
+    function toggleSettings() {
+      document.getElementById('settings-panel').classList.toggle('translate-x-full');
+    }
+
+    function toggleInspector() {
+      const modal = document.getElementById('inspector-modal');
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+    }
+
+    function toggleVectorGrid() {
+      settings.showVectorGrid = !settings.showVectorGrid;
+      document.getElementById('ctrl-showgrid').checked = settings.showVectorGrid;
+      const gridIcon = document.getElementById('icon-grid');
+      gridIcon.className = settings.showVectorGrid ? "fa-solid fa-border-all text-cyan-400" : "fa-solid fa-border-all text-slate-400";
+    }
+
+    function clearCanvas() {
+      ctx.fillStyle = '#030712';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => p.reset(true));
+    }
+
+    function copyInspectorCode() {
+      const code = `const noiseVal = perlin.noise(x * scale, y * scale, zTime);
+const angle = noiseVal * Math.PI * 2 * multiplier;
+const vx = Math.cos(angle) * speed;
+const vy = Math.sin(angle) * speed;`;
+      document.execCommand('copy');
+      alert('Code snippet copied to clipboard!');
+    }
+
+    // Event Listeners
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      mouse.active = true;
+    });
+
+    window.addEventListener('mouseleave', () => mouse.active = false);
+
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        mouse.x = e.touches[0].clientX;
+        mouse.y = e.touches[0].clientY;
+        mouse.active = true;
+      }
+    });
+
+    window.addEventListener('resize', handleResize);
+
+    // Initialize System
+    window.addEventListener('DOMContentLoaded', () => {
+      handleResize();
+      updateParticleCount();
+      animate();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+<!-- STRINGS: Centralized user-visible labels for Android resources. -->
+<resources>
+    <string name="app_name">BookKeeper</string>
+</resources>

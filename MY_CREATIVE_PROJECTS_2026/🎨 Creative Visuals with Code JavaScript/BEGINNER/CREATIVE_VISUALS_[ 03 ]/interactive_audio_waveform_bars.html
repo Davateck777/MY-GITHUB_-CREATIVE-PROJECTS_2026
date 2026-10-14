@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Audio Waveform Bars & Equalizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #030712;
+      color: #f9fafb;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    code, pre {
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* Glassmorphism Panels */
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-button {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-button:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .glass-button.active {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.5);
+      color: #38bdf8;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.5);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.8);
+    }
+
+    /* Range Sliders */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      height: 6px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+      transition: transform 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+  </style>
+</head>
+<body class="relative w-screen h-screen overflow-hidden bg-slate-950 text-slate-100">
+
+  <!-- Main Equalizer Canvas -->
+  <canvas id="audio-canvas" class="absolute inset-0 w-full h-full block z-0 cursor-crosshair"></canvas>
+
+  <!-- Header Bar -->
+  <header class="absolute top-0 left-0 right-0 z-10 px-4 sm:px-6 py-4 flex items-center justify-between pointer-events-none">
+    <div class="flex items-center gap-3 pointer-events-auto">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 animate-pulse">
+        <i class="fa-solid fa-compact-disc text-xl"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base sm:text-lg leading-tight tracking-wide bg-gradient-to-r from-slate-100 via-cyan-200 to-pink-400 bg-clip-text text-transparent">
+          Audio Waveform Equalizer
+        </h1>
+        <p class="text-xs text-slate-400 hidden sm:block">HTML5 Canvas &amp; Web Audio API Spectrum Visualizer</p>
+      </div>
+    </div>
+
+    <!-- Action Toolbar -->
+    <div class="flex items-center gap-2 pointer-events-auto">
+      <button onclick="toggleInspector()" class="glass-button px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white flex items-center gap-1.5" title="Inspect Web Audio Code & Math">
+        <i class="fa-solid fa-code text-cyan-400"></i>
+        <span class="hidden md:inline">Math &amp; Code</span>
+      </button>
+
+      <button onclick="toggleFullscreen()" class="glass-button px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white flex items-center gap-1.5" title="Toggle Fullscreen Mode">
+        <i class="fa-solid fa-expand text-amber-400"></i>
+        <span class="hidden md:inline">Fullscreen</span>
+      </button>
+
+      <button onclick="toggleControls()" class="glass-button px-3.5 py-2 rounded-xl text-xs font-medium bg-cyan-500/20 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/30 flex items-center gap-1.5 shadow-lg shadow-cyan-500/10">
+        <i class="fa-solid fa-sliders"></i>
+        <span class="hidden sm:inline">Settings</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Audio Source Bar (Top Center) -->
+  <div class="absolute top-20 left-1/2 -translate-x-1/2 z-10 glass-panel p-1.5 rounded-2xl flex items-center gap-2 shadow-2xl border-slate-800 max-w-[95vw] overflow-x-auto">
+    <!-- Mic Input -->
+    <button id="btn-src-mic" onclick="initMicrophoneInput()" class="src-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-2 text-slate-300 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-microphone text-emerald-400"></i>
+      <span>Microphone</span>
+    </button>
+
+    <!-- Synthetic Beat Generator -->
+    <button id="btn-src-synth" onclick="initSynthGenerator('synthwave')" class="src-btn active px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-2 text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 whitespace-nowrap">
+      <i class="fa-solid fa-music text-cyan-400"></i>
+      <span>Synth Beat</span>
+    </button>
+
+    <!-- Ambient Synth Chord -->
+    <button id="btn-src-ambient" onclick="initSynthGenerator('ambient')" class="src-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-2 text-slate-300 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-wave-square text-purple-400"></i>
+      <span>Ambient Pad</span>
+    </button>
+
+    <!-- File Upload -->
+    <label class="src-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-2 text-slate-300 hover:bg-slate-800 cursor-pointer whitespace-nowrap">
+      <i class="fa-solid fa-upload text-pink-400"></i>
+      <span>Upload MP3/WAV</span>
+      <input type="file" id="file-input" accept="audio/*" onchange="handleFileUpload(event)" class="hidden">
+    </label>
+
+    <!-- Play/Pause Toggle -->
+    <button id="btn-play-toggle" onclick="toggleAudioPlayback()" class="glass-button p-1.5 w-8 h-8 rounded-xl text-cyan-300 flex items-center justify-center" title="Play / Pause Audio">
+      <i id="icon-play-toggle" class="fa-solid fa-pause"></i>
+    </button>
+  </div>
+
+  <!-- Mode Selector Bar (Bottom Center) -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 glass-panel p-1.5 rounded-2xl flex items-center gap-1 shadow-2xl border-slate-800/80 max-w-[95vw] overflow-x-auto">
+    <button id="btn-mode-bars" onclick="setVisualizerMode('bars')" class="mode-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 whitespace-nowrap">
+      <i class="fa-solid fa-chart-simple"></i> Equalizer Bars
+    </button>
+    <button id="btn-mode-radial" onclick="setVisualizerMode('radial')" class="mode-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-circle-notch"></i> Radial Spectrum
+    </button>
+    <button id="btn-mode-oscilloscope" onclick="setVisualizerMode('oscilloscope')" class="mode-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-wave-square"></i> Oscilloscope
+    </button>
+    <button id="btn-mode-matrix" onclick="setVisualizerMode('matrix')" class="mode-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap">
+      <i class="fa-solid fa-grip-vertical"></i> Peak Matrix
+    </button>
+  </div>
+
+  <!-- Real-time Audio HUD (Top Left) -->
+  <div class="absolute top-36 left-4 sm:left-6 z-10 glass-panel p-3 rounded-2xl text-xs text-slate-300 flex flex-col gap-2 pointer-events-none shadow-xl border-slate-800/80 w-48 sm:w-56">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+      <span class="text-slate-400 font-medium">Peak Freq:</span>
+      <span id="hud-peak-freq" class="font-mono text-cyan-400 font-bold">120 Hz</span>
+    </div>
+    <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+      <span class="text-slate-400 font-medium">Average Volume:</span>
+      <span id="hud-volume" class="font-mono text-emerald-400 font-bold">-18 dB</span>
+    </div>
+
+    <!-- Frequency Bands Balance -->
+    <div class="space-y-1">
+      <div class="flex justify-between text-[10px] text-slate-400">
+        <span>Bass</span>
+        <span>Mid</span>
+        <span>Treble</span>
+      </div>
+      <div class="h-2 w-full bg-slate-900 rounded-full overflow-hidden flex gap-0.5">
+        <div id="hud-bar-bass" class="h-full bg-pink-500 transition-all duration-75" style="width: 40%"></div>
+        <div id="hud-bar-mid" class="h-full bg-cyan-400 transition-all duration-75" style="width: 35%"></div>
+        <div id="hud-bar-treble" class="h-full bg-purple-500 transition-all duration-75" style="width: 25%"></div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between pt-1 text-[11px]">
+      <span class="text-slate-400">Render Speed:</span>
+      <span id="hud-fps" class="font-mono text-emerald-400 font-semibold">60 FPS</span>
+    </div>
+  </div>
+
+  <!-- Settings Drawer Panel -->
+  <aside id="settings-panel" class="absolute top-0 right-0 bottom-0 w-80 sm:w-96 glass-panel z-20 translate-x-full transition-transform duration-300 ease-out flex flex-col border-l border-slate-800 shadow-2xl">
+    <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-sliders text-cyan-400"></i>
+        <h2 class="font-bold text-slate-100 text-sm sm:text-base">Equalizer Controls</h2>
+      </div>
+      <button onclick="toggleControls()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Controls Body -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 text-xs">
+      <!-- Color Palette -->
+      <div>
+        <label class="block font-semibold text-slate-300 mb-2">Color Palette</label>
+        <select id="ctrl-palette" onchange="updateSettingsFromUI()" class="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-3 py-2 outline-none focus:border-cyan-500">
+          <option value="cyberpunk">Cyberpunk Neon (Cyan / Pink)</option>
+          <option value="rainbow">Rainbow Prism Spectrum</option>
+          <option value="solar">Solar Fire (Amber / Red)</option>
+          <option value="sea">Deep Sea (Aquamarine / Emerald)</option>
+          <option value="sunset">Synthesizer Sunset (Orange / Violet)</option>
+        </select>
+      </div>
+
+      <!-- FFT Size -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>FFT Resolution (Bins)</span>
+          <span id="val-fft" class="font-mono text-cyan-400">256</span>
+        </div>
+        <select id="ctrl-fft" onchange="updateFFTSize(this.value)" class="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-3 py-2 outline-none focus:border-cyan-500">
+          <option value="64">64 (Coarse)</option>
+          <option value="128">128</option>
+          <option value="256" selected>256 (Default)</option>
+          <option value="512">512</option>
+          <option value="1024">1024</option>
+          <option value="2048">2048 (Fine)</option>
+        </select>
+      </div>
+
+      <!-- Smoothing Time Constant -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Smoothing Constant</span>
+          <span id="val-smoothing" class="font-mono text-cyan-400">0.80</span>
+        </div>
+        <input type="range" id="ctrl-smoothing" min="0.1" max="0.95" step="0.05" value="0.80" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Bar Count Cap -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Bar Density</span>
+          <span id="val-bars" class="font-mono text-cyan-400">64</span>
+        </div>
+        <input type="range" id="ctrl-bars" min="16" max="128" step="8" value="64" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Bar Gap Width -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Bar Spacing Gap</span>
+          <span id="val-gap" class="font-mono text-cyan-400">4 px</span>
+        </div>
+        <input type="range" id="ctrl-gap" min="1" max="12" step="1" value="4" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Bar Cap Roundness -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Corner Roundness</span>
+          <span id="val-radius" class="font-mono text-cyan-400">6 px</span>
+        </div>
+        <input type="range" id="ctrl-radius" min="0" max="15" step="1" value="6" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Peak Decay Speed -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Peak Drop Gravity</span>
+          <span id="val-decay" class="font-mono text-cyan-400">0.85</span>
+        </div>
+        <input type="range" id="ctrl-decay" min="0.5" max="0.98" step="0.01" value="0.85" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Glow Intensity -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Glow Effect Intensity</span>
+          <span id="val-glow" class="font-mono text-cyan-400">15 px</span>
+        </div>
+        <input type="range" id="ctrl-glow" min="0" max="35" step="1" value="15" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Trail Fade Decay -->
+      <div>
+        <div class="flex justify-between text-slate-300 font-medium mb-1">
+          <span>Canvas Trail Persistence</span>
+          <span id="val-trail" class="font-mono text-cyan-400">0.25</span>
+        </div>
+        <input type="range" id="ctrl-trail" min="0.05" max="0.8" step="0.05" value="0.25" oninput="updateSettingsFromUI()" class="w-full">
+      </div>
+
+      <!-- Toggles -->
+      <div class="pt-2 border-t border-slate-800 space-y-3">
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-semibold text-slate-300">Symmetrical Mirror Mode</span>
+          <input type="checkbox" id="ctrl-mirror" onchange="updateSettingsFromUI()" class="w-4 h-4 accent-cyan-500 rounded">
+        </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-semibold text-slate-300">Show Peak Value Caps</span>
+          <input type="checkbox" id="ctrl-peaks" checked onchange="updateSettingsFromUI()" class="w-4 h-4 accent-cyan-500 rounded">
+        </label>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- Math & Code Inspector Modal -->
+  <div id="inspector-modal" class="fixed inset-0 z-30 glass-panel bg-slate-950/80 hidden flex-col p-4 sm:p-8 overflow-hidden">
+    <div class="max-w-4xl w-full mx-auto flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+      <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-code text-cyan-400 text-lg"></i>
+          <h2 class="font-bold text-slate-100 text-base">Web Audio API &amp; FFT Frequency Mathematics</h2>
+        </div>
+        <button onclick="toggleInspector()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-950 space-y-4 text-xs text-slate-300 leading-relaxed">
+        <p>
+          The <strong>Web Audio API</strong> processes audio signal graphs in real-time. An <code class="text-cyan-300">AnalyserNode</code> applies a Fast Fourier Transform (FFT) to decompose a time-domain wave signal into its constituent frequency components:
+        </p>
+
+        <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl font-mono text-emerald-400 text-center">
+          Frequency_Bin_Hz(i) = i × (SampleRate / FFT_Size)
+        </div>
+
+        <pre class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-xs text-cyan-300 overflow-x-auto leading-relaxed"><code>// 1. Initialize Web Audio Context & Analyser Node
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const analyser = audioCtx.createAnalyser();
+
+analyser.fftSize = 256; // 128 frequency bins
+analyser.smoothingTimeConstant = 0.8;
+
+// 2. Allocate Data Buffers
+const bufferLength = analyser.frequencyBinCount;
+const frequencyData = new Uint8Array(bufferLength);
+
+// 3. Render Loop Querying FFT Spectrum
+function render() {
+  analyser.getByteFrequencyData(frequencyData);
+
+  for (let i = 0; i &lt; bufferLength; i++) {
+    const value = frequencyData[i]; // 0 to 255
+    const percent = value / 255;
+    const barHeight = percent * canvas.height;
+    
+    // Compute frequency for bin i
+    const hz = i * (audioCtx.sampleRate / analyser.fftSize);
+    
+    // Draw Canvas Equalizer Bar ...
+  }
+  requestAnimationFrame(render);
+}</code></pre>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-950/50 flex items-center justify-between">
+        <span class="text-xs text-slate-400"><i class="fa-brands fa-js text-yellow-400"></i> Standard Web Audio API &amp; HTML5 Canvas</span>
+        <button onclick="copyInspectorCode()" class="glass-button px-3 py-1.5 rounded-xl text-xs text-cyan-300 flex items-center gap-1.5">
+          <i class="fa-regular fa-copy"></i> Copy Code Snippet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('audio-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Audio Context State
+    let audioCtx = null;
+    let analyser = null;
+    let sourceNode = null;
+    let synthOscillators = [];
+    let synthGain = null;
+    let synthInterval = null;
+    let activeSourceType = 'synth'; // 'synth', 'mic', 'file'
+    let isPlaying = false;
+
+    // Data Arrays
+    let dataArray = new Uint8Array(128);
+    let timeArray = new Uint8Array(128);
+    let peakHeights = new Float32Array(128);
+
+    // Dynamic Ripples Physics Array
+    let ripples = [];
+
+    // Interactive Hover Tracking
+    const mouse = { x: -1000, y: -1000, hoveredBin: -1 };
+
+    // Application Settings
+    const settings = {
+      mode: 'bars', // 'bars', 'radial', 'oscilloscope', 'matrix'
+      palette: 'cyberpunk',
+      fftSize: 256,
+      smoothing: 0.8,
+      barCount: 64,
+      gap: 4,
+      borderRadius: 6,
+      decayRate: 0.85,
+      glowIntensity: 15,
+      trailFade: 0.25,
+      mirror: false,
+      showPeaks: true
+    };
+
+    // Color Palette Definitions
+    const PALETTES = {
+      cyberpunk: [
+        { stop: 0, color: '#ec4899' },
+        { stop: 0.5, color: '#a855f7' },
+        { stop: 1, color: '#06b6d4' }
+      ],
+      rainbow: [
+        { stop: 0, color: '#ef4444' },
+        { stop: 0.25, color: '#eab308' },
+        { stop: 0.5, color: '#10b981' },
+        { stop: 0.75, color: '#3b82f6' },
+        { stop: 1, color: '#8b5cf6' }
+      ],
+      solar: [
+        { stop: 0, color: '#f97316' },
+        { stop: 0.5, color: '#ef4444' },
+        { stop: 1, color: '#facc15' }
+      ],
+      sea: [
+        { stop: 0, color: '#06b6d4' },
+        { stop: 0.5, color: '#14b8a6' },
+        { stop: 1, color: '#10b981' }
+      ],
+      sunset: [
+        { stop: 0, color: '#8b5cf6' },
+        { stop: 0.5, color: '#f43f5e' },
+        { stop: 1, color: '#fb923c' }
+      ]
+    };
+
+    // Frame Performance
+    let lastTime = performance.now();
+    let frameCount = 0;
+
+    function ensureAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = settings.fftSize;
+        analyser.smoothingTimeConstant = settings.smoothing;
+        
+        const binCount = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(binCount);
+        timeArray = new Uint8Array(binCount);
+        peakHeights = new Float32Array(binCount);
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function stopCurrentSource() {
+      if (synthInterval) {
+        clearInterval(synthInterval);
+        synthInterval = null;
+      }
+      synthOscillators.forEach(osc => { try { osc.stop(); } catch(e){} });
+      synthOscillators = [];
+
+      if (sourceNode) {
+        try { sourceNode.disconnect(); } catch(e){}
+        sourceNode = null;
+      }
+    }
+
+    // Synthetic Beat / Chord Generator
+    function initSynthGenerator(type = 'synthwave') {
+      ensureAudioContext();
+      stopCurrentSource();
+      activeSourceType = 'synth';
+      isPlaying = true;
+
+      synthGain = audioCtx.createGain();
+      synthGain.gain.value = 0.35;
+      synthGain.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
+      if (type === 'synthwave') {
+        // Synth Beat Generator (Bass Pulse + Arpeggiator)
+        const notes = [110, 130.81, 146.83, 164.81, 196.00, 220.00]; // Am scale
+        let step = 0;
+
+        synthInterval = setInterval(() => {
+          if (!isPlaying || !audioCtx) return;
+
+          // Bass kick emulation
+          if (step % 2 === 0) {
+            const kick = audioCtx.createOscillator();
+            const kickGain = audioCtx.createGain();
+            kick.frequency.setValueAtTime(120, audioCtx.currentTime);
+            kick.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
+            kickGain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+            kickGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
+            kick.connect(kickGain);
+            kickGain.connect(synthGain);
+            kick.start();
+            kick.stop(audioCtx.currentTime + 0.2);
+          }
+
+          // Synth Arpeggio
+          const osc = audioCtx.createOscillator();
+          const noteGain = audioCtx.createGain();
+          const freq = notes[step % notes.length] * (step % 4 === 0 ? 2 : 1);
+          osc.type = step % 3 === 0 ? 'sawtooth' : 'square';
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+          noteGain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+          noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+
+          osc.connect(noteGain);
+          noteGain.connect(synthGain);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.26);
+
+          step++;
+        }, 160);
+
+      } else if (type === 'ambient') {
+        // Ambient Chord Generator
+        const chordFreqs = [130.81, 164.81, 196.00, 246.94]; // Cmaj7
+        synthOscillators = chordFreqs.map(freq => {
+          const osc = audioCtx.createOscillator();
+          const lfo = audioCtx.createOscillator();
+          const lfoGain = audioCtx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+
+          lfo.frequency.value = 0.2 + Math.random() * 0.3;
+          lfoGain.gain.value = 10;
+          lfo.connect(lfoGain);
+          lfoGain.connect(osc.frequency);
+
+          osc.connect(synthGain);
+          osc.start();
+          lfo.start();
+          return osc;
+        });
+      }
+
+      updateSourceUIButtons('btn-src-' + (type === 'synthwave' ? 'synth' : 'ambient'));
+    }
+
+    // Microphone Processing
+    async function initMicrophoneInput() {
+      ensureAudioContext();
+      stopCurrentSource();
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        sourceNode = audioCtx.createMediaStreamSource(stream);
+        sourceNode.connect(analyser);
+        activeSourceType = 'mic';
+        isPlaying = true;
+        updateSourceUIButtons('btn-src-mic');
+      } catch (err) {
+        alert('Microphone access was denied or is unavailable: ' + err.message);
+        initSynthGenerator('synthwave');
+      }
+    }
+
+    // File Upload Handler
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      ensureAudioContext();
+      stopCurrentSource();
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        audioCtx.decodeAudioData(evt.target.result, (buffer) => {
+          const bufferSource = audioCtx.createBufferSource();
+          bufferSource.buffer = buffer;
+          bufferSource.loop = true;
+          bufferSource.connect(analyser);
+          analyser.connect(audioCtx.destination);
+          bufferSource.start(0);
+
+          sourceNode = bufferSource;
+          activeSourceType = 'file';
+          isPlaying = true;
+          updateSourceUIButtons(null);
+        });
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function toggleAudioPlayback() {
+      if (!audioCtx) return;
+      if (isPlaying) {
+        audioCtx.suspend();
+        isPlaying = false;
+        document.getElementById('icon-play-toggle').className = "fa-solid fa-play";
+      } else {
+        audioCtx.resume();
+        isPlaying = true;
+        document.getElementById('icon-play-toggle').className = "fa-solid fa-pause";
+      }
+    }
+
+    function updateSourceUIButtons(activeId) {
+      document.querySelectorAll('.src-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-cyan-500/20', 'border', 'border-cyan-500/30', 'text-cyan-300');
+        btn.classList.add('text-slate-300');
+      });
+      if (activeId) {
+        const activeBtn = document.getElementById(activeId);
+        if (activeBtn) {
+          activeBtn.classList.add('active', 'bg-cyan-500/20', 'border', 'border-cyan-500/30', 'text-cyan-300');
+        }
+      }
+      document.getElementById('icon-play-toggle').className = isPlaying ? "fa-solid fa-pause" : "fa-solid fa-play";
+    }
+
+    function drawEqualizerBars() {
+      const numBars = Math.min(settings.barCount, dataArray.length);
+      const barWidth = (canvas.width - (numBars - 1) * settings.gap) / numBars;
+
+      // Gradient Setup
+      const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+      const palette = PALETTES[settings.palette] || PALETTES.cyberpunk;
+      palette.forEach(p => gradient.addColorStop(p.stop, p.color));
+
+      ctx.fillStyle = gradient;
+      ctx.shadowBlur = settings.glowIntensity;
+      ctx.shadowColor = palette[0].color;
+
+      for (let i = 0; i < numBars; i++) {
+        const value = dataArray[i];
+        const percent = value / 255;
+        const h = percent * (canvas.height * 0.75);
+        const x = i * (barWidth + settings.gap);
+        const y = settings.mirror ? (canvas.height - h) / 2 : canvas.height - h;
+
+        // Hover Effect
+        const isHovered = mouse.hoveredBin === i;
+        ctx.fillStyle = isHovered ? '#ffffff' : gradient;
+
+        // Rounded Bar
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(x, y, barWidth, h, settings.borderRadius);
+        } else {
+          ctx.rect(x, y, barWidth, h);
+        }
+        ctx.fill();
+
+        // Peak Drop Cap
+        if (settings.showPeaks) {
+          if (h > peakHeights[i]) {
+            peakHeights[i] = h;
+          } else {
+            peakHeights[i] *= settings.decayRate;
+          }
+
+          const peakY = settings.mirror ? (canvas.height - peakHeights[i]) / 2 - 4 : canvas.height - peakHeights[i] - 4;
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x, peakY, barWidth, 2);
+        }
+      }
+      ctx.shadowBlur = 0;
+    }
+
+    function drawRadialSpectrum() {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = Math.min(centerX, centerY) * 0.35;
+      const numBars = Math.min(settings.barCount, dataArray.length);
+
+      const palette = PALETTES[settings.palette] || PALETTES.cyberpunk;
+      ctx.shadowBlur = settings.glowIntensity;
+      ctx.shadowColor = palette[0].color;
+
+      // Inner Pulse Bass Circle
+      const bassVal = dataArray[2] || 0;
+      const pulseRadius = radius * (1 + (bassVal / 255) * 0.25);
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = palette[0].color;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      for (let i = 0; i < numBars; i++) {
+        const value = dataArray[i];
+        const percent = value / 255;
+        const barHeight = percent * (radius * 1.2);
+        const angle = (i / numBars) * Math.PI * 2;
+
+        const x1 = centerX + Math.cos(angle) * pulseRadius;
+        const y1 = centerY + Math.sin(angle) * pulseRadius;
+        const x2 = centerX + Math.cos(angle) * (pulseRadius + barHeight);
+        const y2 = centerY + Math.sin(angle) * (pulseRadius + barHeight);
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = palette[i % palette.length].color;
+        ctx.lineWidth = Math.max(2, settings.gap);
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+      ctx.shadowBlur = 0;
+    }
+
+    function drawOscilloscope() {
+      if (!analyser) return;
+      analyser.getByteTimeDomainData(timeArray);
+
+      const palette = PALETTES[settings.palette] || PALETTES.cyberpunk;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = palette[0].color;
+      ctx.shadowBlur = settings.glowIntensity;
+      ctx.shadowColor = palette[0].color;
+
+      ctx.beginPath();
+      const sliceWidth = canvas.width / timeArray.length;
+      let x = 0;
+
+      for (let i = 0; i < timeArray.length; i++) {
+        const v = timeArray[i] / 128.0;
+        const y = (v * canvas.height) / 2;
+
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+
+        x += sliceWidth;
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    function drawPeakMatrix() {
+      const cols = Math.min(settings.barCount, dataArray.length);
+      const rows = 16;
+      const colWidth = (canvas.width - (cols - 1) * settings.gap) / cols;
+      const rowHeight = (canvas.height * 0.6) / rows;
+      const palette = PALETTES[settings.palette] || PALETTES.cyberpunk;
+
+      for (let c = 0; c < cols; c++) {
+        const value = dataArray[c];
+        const activeRows = Math.floor((value / 255) * rows);
+        const x = c * (colWidth + settings.gap);
+
+        for (let r = 0; r < rows; r++) {
+          const y = canvas.height - (r + 1) * (rowHeight + 3);
+          const isActive = r < activeRows;
+
+          ctx.fillStyle = isActive ? palette[r % palette.length].color : 'rgba(255, 255, 255, 0.05)';
+          if (isActive) {
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = palette[r % palette.length].color;
+          } else {
+            ctx.shadowBlur = 0;
+          }
+
+          ctx.fillRect(x, y, colWidth, rowHeight);
+        }
+      }
+      ctx.shadowBlur = 0;
+    }
+
+    function updateAndDrawRipples() {
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        const r = ripples[i];
+        r.radius += 4;
+        r.alpha -= 0.02;
+
+        if (r.alpha <= 0) {
+          ripples.splice(i, 1);
+          continue;
+        }
+
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(56, 189, 248, ${r.alpha})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    function calculateAnalyticsHUD() {
+      if (!analyser || !audioCtx) return;
+
+      let maxVal = 0;
+      let maxBin = 0;
+      let totalSum = 0;
+      let bassSum = 0, midSum = 0, trebleSum = 0;
+
+      const len = dataArray.length;
+      const bassCutoff = Math.floor(len * 0.15);
+      const midCutoff = Math.floor(len * 0.55);
+
+      for (let i = 0; i < len; i++) {
+        const val = dataArray[i];
+        totalSum += val;
+
+        if (val > maxVal) {
+          maxVal = val;
+          maxBin = i;
+        }
+
+        if (i < bassCutoff) bassSum += val;
+        else if (i < midCutoff) midSum += val;
+        else trebleSum += val;
+      }
+
+      // Calculate Hz
+      const peakHz = Math.round(maxBin * (audioCtx.sampleRate / analyser.fftSize));
+      document.getElementById('hud-peak-freq').innerText = `${peakHz} Hz`;
+
+      // Average dB Volume Approximation
+      const avgVal = totalSum / len;
+      const db = Math.round(20 * Math.log10((avgVal || 1) / 255));
+      document.getElementById('hud-volume').innerText = `${db} dB`;
+
+      // Split Balance Bars
+      const bandTotal = (bassSum + midSum + trebleSum) || 1;
+      document.getElementById('hud-bar-bass').style.width = `${(bassSum / bandTotal) * 100}%`;
+      document.getElementById('hud-bar-mid').style.width = `${(midSum / bandTotal) * 100}%`;
+      document.getElementById('hud-bar-treble').style.width = `${(trebleSum / bandTotal) * 100}%`;
+    }
+
+    function animate(currentTime = performance.now()) {
+      // FPS Counter
+      frameCount++;
+      if (currentTime - lastTime >= 1000) {
+        document.getElementById('hud-fps').innerText = `${Math.round((frameCount * 1000) / (currentTime - lastTime))} FPS`;
+        frameCount = 0;
+        lastTime = currentTime;
+      }
+
+      // Trail Fade
+      ctx.fillStyle = `rgba(3, 7, 18, ${settings.trailFade})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (analyser && isPlaying) {
+        analyser.getByteFrequencyData(dataArray);
+        calculateAnalyticsHUD();
+      }
+
+      // Render Active Mode
+      if (settings.mode === 'bars') drawEqualizerBars();
+      else if (settings.mode === 'radial') drawRadialSpectrum();
+      else if (settings.mode === 'oscilloscope') drawOscilloscope();
+      else if (settings.mode === 'matrix') drawPeakMatrix();
+
+      // Physics Overlay
+      updateAndDrawRipples();
+
+      requestAnimationFrame(animate);
+    }
+
+    function setVisualizerMode(mode) {
+      settings.mode = mode;
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.className = "mode-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap";
+      });
+      const activeBtn = document.getElementById(`btn-mode-${mode}`);
+      if (activeBtn) {
+        activeBtn.className = "mode-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 whitespace-nowrap";
+      }
+    }
+
+    function updateFFTSize(val) {
+      settings.fftSize = parseInt(val);
+      document.getElementById('val-fft').innerText = val;
+      if (analyser) {
+        analyser.fftSize = settings.fftSize;
+        const binCount = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(binCount);
+        timeArray = new Uint8Array(binCount);
+        peakHeights = new Float32Array(binCount);
+      }
+    }
+
+    function updateSettingsFromUI() {
+      settings.palette = document.getElementById('ctrl-palette').value;
+      settings.smoothing = parseFloat(document.getElementById('ctrl-smoothing').value);
+      settings.barCount = parseInt(document.getElementById('ctrl-bars').value);
+      settings.gap = parseInt(document.getElementById('ctrl-gap').value);
+      settings.borderRadius = parseInt(document.getElementById('ctrl-radius').value);
+      settings.decayRate = parseFloat(document.getElementById('ctrl-decay').value);
+      settings.glowIntensity = parseInt(document.getElementById('ctrl-glow').value);
+      settings.trailFade = parseFloat(document.getElementById('ctrl-trail').value);
+      settings.mirror = document.getElementById('ctrl-mirror').checked;
+      settings.showPeaks = document.getElementById('ctrl-peaks').checked;
+
+      if (analyser) analyser.smoothingTimeConstant = settings.smoothing;
+
+      document.getElementById('val-smoothing').innerText = settings.smoothing.toFixed(2);
+      document.getElementById('val-bars').innerText = settings.barCount;
+      document.getElementById('val-gap').innerText = `${settings.gap} px`;
+      document.getElementById('val-radius').innerText = `${settings.borderRadius} px`;
+      document.getElementById('val-decay').innerText = settings.decayRate.toFixed(2);
+      document.getElementById('val-glow').innerText = `${settings.glowIntensity} px`;
+      document.getElementById('val-trail').innerText = settings.trailFade.toFixed(2);
+    }
+
+    function handleResize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function toggleControls() {
+      document.getElementById('settings-panel').classList.toggle('translate-x-full');
+    }
+
+    function toggleInspector() {
+      const modal = document.getElementById('inspector-modal');
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function copyInspectorCode() {
+      const code = `const audioCtx = new AudioContext();
+const analyser = audioCtx.createAnalyser();
+analyser.fftSize = 256;
+const dataArray = new Uint8Array(analyser.frequencyBinCount);
+analyser.getByteFrequencyData(dataArray);`;
+      document.execCommand('copy');
+      alert('Snippet copied to clipboard!');
+    }
+
+    // Canvas Interactions
+    canvas.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+
+      const numBars = Math.min(settings.barCount, dataArray.length);
+      const barWidth = (canvas.width - (numBars - 1) * settings.gap) / numBars;
+      mouse.hoveredBin = Math.floor(e.clientX / (barWidth + settings.gap));
+    });
+
+    canvas.addEventListener('click', (e) => {
+      ripples.push({
+        x: e.clientX,
+        y: e.clientY,
+        radius: 10,
+        alpha: 1.0
+      });
+    });
+
+    window.addEventListener('resize', handleResize);
+
+    // Bootstrap Application
+    window.addEventListener('DOMContentLoaded', () => {
+      handleResize();
+      initSynthGenerator('synthwave');
+      animate();
+    });
+  </script>
+</body>
+</html>

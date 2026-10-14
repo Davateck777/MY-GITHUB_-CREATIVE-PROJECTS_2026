@@ -1,0 +1,10 @@
+<!-- THEME: Supplies a simple Material-compatible launch theme before Compose renders. -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.BookKeeper" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/bookkeeper_teal</item>
+        <item name="android:navigationBarColor">@android:color/white</item>
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>
