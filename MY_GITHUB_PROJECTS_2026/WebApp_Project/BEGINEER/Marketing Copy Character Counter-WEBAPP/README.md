@@ -147,6 +147,7 @@ marketing-copy-counter/
 │   └── dom.smoke.mjs     Optional jsdom UI smoke test
 ├── scripts/
 │   └── dev-server.mjs    Zero-dependency static server
+├── USER-TEST-DATA.md     Hands-on walkthrough: 16 scenarios, exact expected text
 ├── TEST-DATA.md          Fixtures, boundaries, manual checklist
 ├── THIRD-PARTY-NOTICES.md
 ├── README.md
@@ -172,6 +173,9 @@ Covers:
   denominator, grade bands, per-check deductions
 - **Backups:** round-trip, schema-version refusal, wrong types, unknown fields,
   truncation warnings, duplicate ids, merge vs replace, prototype-pollution payloads
+
+`USER-TEST-DATA.md` is the human version: 16 user scenarios with copy-paste inputs and the
+exact wording you should see on screen, plus a pass/fail log and a "never see this" list.
 
 `tests/dom.smoke.mjs` additionally drives the real DOM (jsdom) to prove live counting,
 asset add/remove limits, per-platform persistence, preview rendering and saved-page

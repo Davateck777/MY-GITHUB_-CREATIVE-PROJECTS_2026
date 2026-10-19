@@ -105,6 +105,11 @@ export function toast(message, tone = 'info') {
   }, 3200);
 }
 
+/** "1 word" / "3 words" — used everywhere a count is shown to a person. */
+export function plural(count, singular, pluralForm = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : pluralForm}`;
+}
+
 export function formatNumber(value) {
   return new Intl.NumberFormat().format(value);
 }

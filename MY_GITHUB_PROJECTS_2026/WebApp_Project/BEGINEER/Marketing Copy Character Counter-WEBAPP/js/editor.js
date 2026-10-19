@@ -40,7 +40,8 @@ import {
   toast,
   copyText,
   downloadBlob,
-  promptDialog
+  promptDialog,
+  plural
 } from './ui.js';
 
 const state = {
@@ -50,8 +51,7 @@ const state = {
   targets: {},
   device: 'mobile',
   assetMode: 'shown',
-  sets: [],
-  dirty: false
+  sets: []
 };
 
 let root;
@@ -92,11 +92,8 @@ export function initEditor() {
   buildActions();
   renderPlatform(state.platformId);
   bindGlobalKeys();
-  window.addEventListener('beforeunload', (event) => {
-    if (!state.dirty) return;
-    event.preventDefault();
-    event.returnValue = '';
-  });
+  // No beforeunload guard: every keystroke is written to localStorage
+  // synchronously, so a reload cannot lose work. Warning anyway would be a lie.
 }
 
 function currentPlatform() {
@@ -239,7 +236,6 @@ async function saveCurrentSet() {
     announce(result.error, true);
     return;
   }
-  state.dirty = false;
   toast(`Saved “${name}”.`, 'success');
   announce(`Saved ${name}. Open the Saved copy page to manage it.`);
   window.dispatchEvent(new CustomEvent('mccc:saved-changed'));
@@ -301,7 +297,6 @@ async function clearFields() {
   for (const field of platform.fields) {
     values[field.key] = field.kind === 'asset-list' ? ['', '', ''] : '';
   }
-  state.dirty = true;
   persistWorking();
   renderPlatform(platform.id);
   toast('Fields cleared.');
@@ -555,7 +550,6 @@ function refreshAssetList(field, focusIndex) {
   const values = currentValues()[field.key];
   clear(container);
   values.forEach((asset, index) => container.append(assetRow(field, index, asset)));
-  state.dirty = true;
   persistWorking();
   updateOutputs();
   const next = container.querySelector(`[data-index="${focusIndex}"]`);
@@ -595,7 +589,6 @@ function onPanelInput(event) {
       .map((keyword) => keyword.trim())
       .filter(Boolean);
     saveKeywords(state.keywords);
-    state.dirty = true;
     updateOutputs();
     return;
   }
@@ -627,8 +620,6 @@ function onPanelInput(event) {
   } else {
     currentValues()[fieldKey] = target.value;
   }
-
-  state.dirty = true;
   persistWorking();
   updateOutputs();
 }
@@ -753,7 +744,7 @@ function renderSingleCounter(node, measurement, field) {
   node.append(meter({ count: measurement.count, limit: measurement.limit, status: measurement.status, label: `${field.label} length` }));
   node.append(
     el('div', { className: 'counter__meta' }, [
-      el('span', { text: `${measurement.words} words` }),
+      el('span', { text: plural(measurement.words, 'word') }),
       el('span', { text: COUNTING_METHODS[field.method]?.label ?? field.method }),
       measurement.target
         ? el('span', {
@@ -786,7 +777,7 @@ function renderExtra(node, measurement, field) {
       el('p', {
         className: 'notice notice--error',
         role: 'status',
-        text: `Over the hard limit by ${measurement.overage}. ${field.label} cannot be saved on this platform until it is shorter.`
+        text: `Over the hard limit by ${plural(measurement.overage, 'character')}. ${field.label} cannot be saved on this platform until it is shorter.`
       })
     );
   } else if (measurement.status === STATUS.BEYOND) {
@@ -794,7 +785,10 @@ function renderExtra(node, measurement, field) {
       el('p', {
         className: 'notice notice--info',
         role: 'status',
-        text: `This is a display recommendation, not a cap. About ${measurement.overage} characters will likely sit behind “See more”.`
+        text: `This is a display recommendation, not a cap. About ${plural(
+          measurement.overage,
+          'character'
+        )} will likely sit behind “See more”.`
       })
     );
   } else if (measurement.status === STATUS.NEAR) {
