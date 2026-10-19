@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A private, browser-local playground for stronger professional headlines and bios."
+    />
+    <title>Optimizer · Profilecraft</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/themes.css" />
+  </head>
+  <body>
+    <!-- Shared navigation and accessible page shell. --><a
+      class="skip"
+      href="#main"
+      >Skip to content</a
+    >
+    <header class="header">
+      <a class="brand" href="optimizer.html"
+        ><span class="brandmark">p<span>✦</span></span
+        >profilecraft<span class="brand-tag">THE PROFILE STUDIO</span></a
+      >
+      <nav aria-label="Main navigation">
+        <a href="optimizer.html" class="active" aria-current="page">Optimizer</a
+        ><a href="drafts.html">Saved drafts</a><a href="guide.html">Guide</a>
+      </nav>
+      <button id="theme" class="theme">◐ Dark mode</button>
+    </header>
+    <main id="main">
+      <section class="page-heading">
+        <div>
+          <p class="eyebrow">YOUR EXPERTISE. BETTER EXPRESSED.</p>
+          <h1>Make your first impression <em>count.</em></h1>
+          <p class="lede">
+            Refine your headline. Find your voice. Build a profile that reads
+            like you.
+          </p>
+        </div>
+        <span class="privacy"
+          ><span class="dot"></span> Everything stays in your browser</span
+        >
+      </section>
+      <div class="workspace-toolbar">
+        <div>
+          <span class="workspace-label">YOUR WORKSPACE</span
+          ><span id="save-status" class="muted">Autosaved working copy</span>
+        </div>
+        <div class="actions">
+          <button id="new-draft" class="btn">New draft</button
+          ><button id="export-text" class="btn">↓ Export text</button
+          ><button id="save-draft" class="btn primary">
+            Save draft <span>↗</span>
+          </button>
+        </div>
+      </div>
+      <div class="workbench">
+        <section class="card editor">
+          <div class="card-top">
+            <div>
+              <span class="step">01</span>
+              <h2>The editor</h2>
+            </div>
+            <span class="pill">LIVE FEEDBACK</span>
+          </div>
+          <label for="name">Draft name</label
+          ><input
+            id="name"
+            maxlength="120"
+            placeholder="e.g. My consulting profile"
+            value="Untitled profile"
+          />
+          <div class="two-col">
+            <div>
+              <label for="role"
+                >Target role <span class="optional">optional</span></label
+              ><input
+                id="role"
+                maxlength="300"
+                placeholder="e.g. Brand strategist"
+              />
+            </div>
+            <div>
+              <label for="audience"
+                >Your audience <span class="optional">optional</span></label
+              ><input
+                id="audience"
+                maxlength="300"
+                placeholder="e.g. Early-stage founders"
+              />
+            </div>
+          </div>
+          <div class="label-row">
+            <label for="headline">Professional headline</label
+            ><span
+              id="headline-count"
+              class="counter"
+              aria-live="polite"
+            ></span>
+          </div>
+          <textarea
+            id="headline"
+            rows="3"
+            placeholder="What you do | Who you help | The value you bring"
+          ></textarea>
+          <div class="under-field">
+            <span>Your positioning, in one clear line.</span
+            ><button class="text-btn" id="copy-headline">Copy headline</button>
+          </div>
+          <div class="label-row">
+            <label for="about">About / executive bio</label
+            ><span id="about-count" class="counter" aria-live="polite"></span>
+          </div>
+          <textarea
+            id="about"
+            rows="9"
+            placeholder="Start with who you help and how. Add your expertise, a truthful example, and an invitation to connect."
+          ></textarea>
+          <div class="under-field">
+            <span id="word-count">0 words</span
+            ><button class="text-btn" id="copy-about">Copy About</button>
+          </div>
+          <label for="keywords">Target keywords</label
+          ><input
+            id="keywords"
+            maxlength="1000"
+            placeholder="brand strategy, consulting, leadership"
+          />
+          <p class="field-help">
+            Separate terms with commas. Up to 30 keywords; natural language
+            comes first.
+          </p>
+          <details class="settings">
+            <summary>Starting points &amp; length settings</summary>
+            <div class="template-row">
+              <label for="template">Starter template</label
+              ><select id="template">
+                <option value="">Choose a starting point…</option>
+                <option value="executive">Executive / founder</option>
+                <option value="consultant">Independent consultant</option>
+                <option value="career">Career / job search</option></select
+              ><button class="btn" id="apply-template">Apply template</button>
+            </div>
+            <p class="field-help">
+              Templates contain placeholders. Replace them only with truthful
+              details.
+            </p>
+            <div class="two-col">
+              <div>
+                <label for="headline-limit">Headline limit</label
+                ><input
+                  type="number"
+                  min="1"
+                  max="20000"
+                  id="headline-limit"
+                  value="220"
+                />
+              </div>
+              <div>
+                <label for="about-limit">About limit</label
+                ><input
+                  type="number"
+                  min="1"
+                  max="20000"
+                  id="about-limit"
+                  value="2600"
+                />
+              </div>
+            </div>
+            <p class="field-help">
+              Configurable defaults, not a live platform check. Confirm
+              LinkedIn’s current limits before posting.
+            </p>
+          </details>
+        </section>
+        <div class="right-column">
+          <section class="card analysis">
+            <div class="card-top">
+              <div>
+                <span class="step">02</span>
+                <h2>Your writing, at a glance</h2>
+              </div>
+              <a class="subtle-link" href="guide.html#scoring"
+                >How it works ↗</a
+              >
+            </div>
+            <div class="score-hero">
+              <div class="score-ring" id="score-ring">
+                <strong id="score">0</strong><span>/ 100</span>
+              </div>
+              <div>
+                <h3 id="score-label">A fresh start</h3>
+                <p>Writing Quality Score</p>
+                <span class="muted"
+                  >An editing guide. Not a search ranking.</span
+                >
+              </div>
+            </div>
+            <div class="analysis-tabs" role="group" aria-label="Analyze field">
+              <button data-field="headline" aria-pressed="true">Headline</button
+              ><button data-field="about" aria-pressed="false">About</button>
+            </div>
+            <div id="checks" class="checks"></div>
+            <div class="keyword-header">
+              <h3>Keyword signals</h3>
+              <span id="coverage" class="muted"></span>
+            </div>
+            <div id="keyword-chips" class="chips"></div>
+            <p class="field-help">
+              Chips show occurrences · density (% of words). More is not always
+              better.
+            </p>
+            <div class="suggestion-box">
+              <h3>↗ Your next edits</h3>
+              <ul id="suggestions"></ul>
+            </div>
+          </section>
+          <section class="card preview">
+            <div class="card-top">
+              <div>
+                <span class="step">03</span>
+                <h2>The first impression</h2>
+              </div>
+              <div
+                class="device-controls"
+                role="group"
+                aria-label="Preview width"
+              >
+                <button data-device="desktop" aria-pressed="true">
+                  Desktop</button
+                ><button data-device="mobile" aria-pressed="false">
+                  Mobile
+                </button>
+              </div>
+            </div>
+            <div id="profile-preview" class="profile-preview">
+              <div class="profile-cover">
+                <span>YOUR NEXT CHAPTER</span><span>✦</span>
+              </div>
+              <div class="profile-body">
+                <div class="avatar">YOU</div>
+                <div class="profile-name">Your name <span>✓</span></div>
+                <p id="preview-headline" class="preview-headline"></p>
+                <p class="profile-meta">Your location · Your industry</p>
+                <div class="profile-buttons">
+                  <span>Connect</span><span>Message</span>
+                </div>
+                <hr />
+                <h3>About</h3>
+                <p id="preview-about" class="preview-about"></p>
+                <button id="expand-about" class="text-btn" hidden>
+                  See more
+                </button>
+              </div>
+            </div>
+            <p class="preview-note">
+              Illustrative layout only. LinkedIn’s interface and truncation may
+              differ.
+            </p>
+          </section>
+          <section class="card comparison">
+            <h2>Before &amp; after</h2>
+            <label for="baseline">Compare with a saved draft</label
+            ><select id="baseline">
+              <option value="">Choose a baseline…</option>
+            </select>
+            <div id="comparison-result" class="muted">
+              Save a draft to track your progress.
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <span>Built for your next chapter.</span
+      ><span>Mr DAVE ADEX | DAVA TECK</span
+      ><span>Private by design · No sign-in</span>
+    </footer>
+    <div id="notice" role="status" class="toast" hidden></div>
+    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/optimizer.js"></script>
+  </body>
+</html>

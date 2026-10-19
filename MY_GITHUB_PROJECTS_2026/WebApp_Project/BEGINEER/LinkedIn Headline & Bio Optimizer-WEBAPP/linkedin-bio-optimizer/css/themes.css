@@ -1,0 +1,31 @@
+/* Shared tokens support persistent light/dark modes and browser-native controls. */
+:root {
+  color-scheme: light;
+  --bg: #f6f6f3;
+  --surface: #fff;
+  --surface-alt: #f5f4fa;
+  --text: #232335;
+  --muted: #737382;
+  --line: #e8e7ec;
+  --accent: #6251b4;
+  --accent-soft: #efecfa;
+  --good: #42745f;
+  --good-bg: #eef6f0;
+  --danger: #a13d49;
+  --shadow: 0 4px 24px #28234705;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15151c;
+  --surface: #20202a;
+  --surface-alt: #272534;
+  --text: #efedf7;
+  --muted: #b1adbf;
+  --line: #383543;
+  --accent: #b5a4fc;
+  --accent-soft: #342c4c;
+  --good: #a0d0b8;
+  --good-bg: #273a32;
+  --danger: #ff9fab;
+  --shadow: none;
+}

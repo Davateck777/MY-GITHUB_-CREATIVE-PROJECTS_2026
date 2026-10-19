@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marketing Copy Character Counter — platform-aware copy checks</title>
+  <meta name="description" content="Count marketing copy against Google Ads, X and Meta limits, with transparent writing checks and an explainable Copy Readiness Score. Runs entirely in your browser.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui,sans-serif' font-size='15' font-weight='700' fill='white' text-anchor='middle'%3E30%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body data-page="home">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__mark" aria-hidden="true">30</span>
+        <span class="brand__text">
+          <span class="brand__name">Marketing Copy Counter</span>
+          <span class="brand__sub">Google Ads · X · Meta</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav">
+        <span aria-hidden="true">☰</span>
+        <span class="visually-hidden">Menu</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" data-nav aria-label="Main">
+        <a href="index.html" data-nav-link="home">Overview</a>
+        <a href="editor.html" data-nav-link="editor">Editor</a>
+        <a href="saved.html" data-nav-link="saved">
+          Saved copy
+          <span class="badge" data-saved-count hidden>0</span>
+        </a>
+        <a href="guide.html" data-nav-link="guide">Guide</a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Change theme">◐ Theme: system</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div data-storage-warning hidden></div>
+
+    <section class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Local, no-account copy preparation</p>
+        <h1>Write the copy once. Validate it for every platform.</h1>
+        <p class="hero__lede">
+          Google Ads counts double-width characters as two. X shortens every link to 23 and
+          weights scripts differently. Meta truncates instead of rejecting. This tool applies each
+          platform's actual counting method, then explains its writing feedback line by line.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary btn--large" href="editor.html">Open the editor</a>
+          <a class="btn btn--large btn--ghost" href="guide.html">Read the rules &amp; limits</a>
+        </div>
+        <p class="hero__note">
+          No account, no API key, no upload. Your copy stays in this browser unless you export it.
+        </p>
+      </div>
+
+      <div class="hero__card" aria-hidden="true">
+        <div class="mini-preview">
+          <div class="mini-preview__row">
+            <span class="mini-preview__label">X · standard post</span>
+            <span class="pill pill--near">Near limit</span>
+          </div>
+          <p class="mini-preview__text">We shipped weighted counting today. Links now count as 23 — exactly like the real thing → https://example.com/notes</p>
+          <div class="meter" role="img" aria-label="Example meter at 84 percent">
+            <div class="meter__fill" data-status="near" style="width:84%"></div>
+          </div>
+          <div class="mini-preview__row">
+            <span class="mini-preview__count">236 / 280</span>
+            <span class="mini-preview__sub">44 left · 41 words</span>
+          </div>
+          <hr class="mini-preview__rule">
+          <div class="mini-preview__row">
+            <span class="mini-preview__label">Copy Readiness Score</span>
+            <span class="mini-preview__score">82</span>
+          </div>
+          <p class="mini-preview__sub">Specificity 74 · Scanability 92 · Keyword coverage excluded</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="formats-title">
+      <div class="section__head">
+        <h2 id="formats-title">Three formats, three counting rules</h2>
+        <p>Limits, counting methods, sources and review dates live in one configuration file — not scattered through the interface.</p>
+      </div>
+
+      <div class="format-grid">
+        <article class="format-card">
+          <h3 class="format-card__title">Google Ads · responsive search ad</h3>
+          <ul class="format-card__list">
+            <li><strong>Headlines</strong> 3–15 assets, 30 characters each</li>
+            <li><strong>Descriptions</strong> 2–4 assets, 90 characters each</li>
+            <li><strong>Display paths</strong> 2 optional fields, 15 characters each</li>
+          </ul>
+          <p class="format-card__note">
+            <span class="tag tag--hard">Hard limit</span>
+            Double-width CJK characters count as 2. Emoji are counted as 2 here as a conservative assumption.
+          </p>
+        </article>
+
+        <article class="format-card">
+          <h3 class="format-card__title">X · standard post</h3>
+          <ul class="format-card__list">
+            <li><strong>One field</strong> 280 weighted characters</li>
+            <li><strong>URLs</strong> always count as 23 characters</li>
+            <li><strong>Scripts</strong> Latin counts 1, CJK counts 2, emoji count 2</li>
+          </ul>
+          <p class="format-card__note">
+            <span class="tag tag--hard">Hard limit</span>
+            Weighted counts come from the bundled official twitter-text parser, not an approximation.
+          </p>
+        </article>
+
+        <article class="format-card">
+          <h3 class="format-card__title">Meta · feed ad</h3>
+          <ul class="format-card__list">
+            <li><strong>Primary text</strong> about 125 characters stay visible</li>
+            <li><strong>Headline</strong> 40 recommended, ~27 on Facebook Feed</li>
+            <li><strong>Description</strong> 30, only rendered on some placements</li>
+          </ul>
+          <p class="format-card__note">
+            <span class="tag tag--soft">Recommendation</span>
+            Meta publishes display guidance, not a submission cap. Overlong copy is usually hidden behind “See more”.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="checks-title">
+      <div class="section__head">
+        <h2 id="checks-title">Compliance and quality, kept separate</h2>
+        <p>A 280-character post can still be unreadable. The tool reports both signals side by side and never blends them into one misleading number.</p>
+      </div>
+
+      <div class="split">
+        <div class="prose">
+          <h3>Limit compliance</h3>
+          <p>Counts, remaining allowance, overage, near-limit warnings and Google asset-count minimums. Hard limits and display recommendations are labelled differently, because they fail differently.</p>
+          <h3>Copy Readiness Score</h3>
+          <p>Six disclosed checks with published weights: scanability, specificity, capitalisation, repetition, keyword coverage and message coverage. Keyword coverage is excluded, not penalised, when you leave the keyword field empty.</p>
+          <h3>Transparent by construction</h3>
+          <p>Every deduction is listed with the points it removed, so a score of 68 is explainable line by line instead of being a black box.</p>
+        </div>
+
+        <div class="weights-card">
+          <h3 class="weights-card__title">Disclosed weights</h3>
+          <table class="weights-table">
+            <caption class="visually-hidden">Readiness score checks and their weights</caption>
+            <tbody>
+              <tr><th scope="row">Scanability &amp; sentence length</th><td>25</td></tr>
+              <tr><th scope="row">Specificity &amp; concrete detail</th><td>20</td></tr>
+              <tr><th scope="row">Capitalisation discipline</th><td>15</td></tr>
+              <tr><th scope="row">Repetition control</th><td>15</td></tr>
+              <tr><th scope="row">Keyword coverage</th><td>15</td></tr>
+              <tr><th scope="row">Message coverage</th><td>10</td></tr>
+            </tbody>
+          </table>
+          <p class="weights-card__note">Weights re-normalise across the checks that actually run. Limit compliance is reported separately and never folded into this score.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="boundaries-title">
+      <div class="section__head">
+        <h2 id="boundaries-title">What this tool does not do</h2>
+      </div>
+      <div class="boundary-grid">
+        <div class="boundary">
+          <h3>It does not predict performance</h3>
+          <p>The Copy Readiness Score is not Google Ads Quality Score, not a platform approval, and not a forecast of clicks or conversions.</p>
+        </div>
+        <div class="boundary">
+          <h3>It does not preview with certainty</h3>
+          <p>Previews are illustrative. Real truncation depends on placement, device, font size, language and the platform's own layout engine.</p>
+        </div>
+        <div class="boundary">
+          <h3>It does not store anything remotely</h3>
+          <p>Saved copy lives in this browser's localStorage. It is not encrypted, not synced, and not visible to anyone else. Export a JSON backup to move it.</p>
+        </div>
+        <div class="boundary">
+          <h3>It does not publish or rewrite</h3>
+          <p>No account connections, no publishing, no live policy review, no collaboration, and no AI rewrites. You stay the author.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p class="site-footer__brand">Marketing Copy Character Counter — built by Mr DAVE ADEX | DAVA TECK</p>
+      <p class="site-footer__meta">
+        Rules reviewed 19 October 2026 · <a href="guide.html#rules">sources and review dates</a> ·
+        <a href="THIRD-PARTY-NOTICES.md">third-party notices</a> · © <span data-year>2026</span>
+      </p>
+      <p class="site-footer__meta">Static site. No tracking, no analytics, no cookies.</p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# Local-only dependency and generated artifacts.
+node_modules/
+.DS_Store
+*.log

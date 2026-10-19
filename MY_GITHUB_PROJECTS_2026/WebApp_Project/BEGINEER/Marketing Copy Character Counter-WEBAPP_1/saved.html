@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Saved copy — Marketing Copy Character Counter</title>
+  <meta name="description" content="Manage saved copy sets stored in this browser: search, rename, duplicate, copy, export, delete, and import a validated JSON backup.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui,sans-serif' font-size='15' font-weight='700' fill='white' text-anchor='middle'%3E30%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body data-page="saved">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__mark" aria-hidden="true">30</span>
+        <span class="brand__text">
+          <span class="brand__name">Marketing Copy Counter</span>
+          <span class="brand__sub">Google Ads · X · Meta</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav">
+        <span aria-hidden="true">☰</span>
+        <span class="visually-hidden">Menu</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" data-nav aria-label="Main">
+        <a href="index.html" data-nav-link="home">Overview</a>
+        <a href="editor.html" data-nav-link="editor">Editor</a>
+        <a href="saved.html" data-nav-link="saved">
+          Saved copy
+          <span class="badge" data-saved-count hidden>0</span>
+        </a>
+        <a href="guide.html" data-nav-link="guide">Guide</a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Change theme">◐ Theme: system</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div data-storage-warning hidden></div>
+
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">Library</p>
+        <h1>Saved copy</h1>
+      </div>
+      <p class="page-head__note">
+        Stored in this browser only — not encrypted, not synced. Export a JSON backup before clearing browser data.
+      </p>
+    </div>
+
+    <div data-saved>
+      <section class="toolbar" aria-label="Saved copy controls">
+        <div class="toolbar__group toolbar__group--grow">
+          <label class="visually-hidden" for="saved-search">Search saved copy</label>
+          <input
+            id="saved-search"
+            type="search"
+            class="input"
+            placeholder="Search by name, platform or copy text…"
+            data-saved-search
+            autocomplete="off"
+          >
+        </div>
+        <div class="toolbar__group">
+          <button type="button" class="btn" data-export-all>Export all (.json)</button>
+          <label class="btn btn--primary file-btn">
+            Import backup
+            <input type="file" accept="application/json,.json" data-import-input class="visually-hidden">
+          </label>
+          <a class="btn btn--ghost" href="editor.html">New copy set</a>
+        </div>
+      </section>
+
+      <div class="import-report" data-import-report hidden></div>
+
+      <p class="library-meta" data-saved-meta></p>
+
+      <div class="set-list" data-saved-list></div>
+
+      <div class="empty-state" data-saved-empty hidden>
+        <h2 class="empty-state__title">Nothing saved yet</h2>
+        <p>Build a copy set in the editor, then choose <strong>Save copy set</strong>. Sets appear here for loading, duplicating and export.</p>
+        <a class="btn btn--primary" href="editor.html">Open the editor</a>
+      </div>
+    </div>
+
+    <section class="section section--tight" aria-labelledby="import-help">
+      <h2 id="import-help" class="section__title">About imports</h2>
+      <ul class="notes">
+        <li>Only JSON exports from this app are accepted. Every field, field type and platform is validated before anything is written.</li>
+        <li>Merge keeps your existing sets and overwrites any with the same id. Replace deletes everything currently saved and keeps the file.</li>
+        <li>Unknown fields and over-long values are reported as warnings, never silently accepted.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p class="site-footer__brand">Marketing Copy Character Counter — built by Mr DAVE ADEX | DAVA TECK</p>
+      <p class="site-footer__meta">
+        <a href="guide.html#privacy">Privacy and storage</a> ·
+        <a href="guide.html#rules">Rules and limits</a> ·
+        © <span data-year>2026</span>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

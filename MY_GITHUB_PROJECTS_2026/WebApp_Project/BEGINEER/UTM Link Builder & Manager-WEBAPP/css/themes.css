@@ -1,0 +1,9 @@
+/* DARK THEME: Re-maps the semantic tokens while leaving component layout unchanged. */
+html[data-theme="dark"] { --ink:#e8f0eb; --muted:#91a49d; --line:#2b4039; --page:#0f1714; --card:#15201c; --teal:#72d4bd; --teal-dark:#4db59e; --mint:#183a32; --coral:#f08a70; --gold:#e0b35d; --shadow:0 18px 50px rgba(0,0,0,.18); }
+html[data-theme="dark"] .topbar,html[data-theme="dark"] .card,html[data-theme="dark"] .history-table-wrap,html[data-theme="dark"] .button.outline,html[data-theme="dark"] .button.secondary,html[data-theme="dark"] .qr-dialog { background:var(--card); }
+html[data-theme="dark"] .field input,html[data-theme="dark"] .field select,html[data-theme="dark"] .preset-bar select,html[data-theme="dark"] .history-toolbar select,html[data-theme="dark"] .search-wrap input { color:var(--ink); background:#101a16; border-color:var(--line); }
+html[data-theme="dark"] .preset-bar,html[data-theme="dark"] .dataset-info,html[data-theme="dark"] .preview-url,html[data-theme="dark"] .history-table th { background:#11201a; border-color:var(--line); }
+html[data-theme="dark"] .safety-notice,html[data-theme="dark"] .preview-tip { background:#2b251b; border-color:#5a4930; }
+html[data-theme="dark"] .safety-notice p,html[data-theme="dark"] .preview-tip p { color:#d2bd93; }
+html[data-theme="dark"] .hero-callout,html[data-theme="dark"] .hero-stat-card { box-shadow:12px 12px 0 #233d35; }
+html[data-theme="dark"] .history-table td { border-color:var(--line); }

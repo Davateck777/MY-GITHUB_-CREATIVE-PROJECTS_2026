@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <!-- BUILDER PAGE HEAD: Loads the shared page styles and sets the page identity. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7f4">
+  <title>Linkloom — Builder</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/themes.css">
+</head>
+<body>
+  <!-- SHARED HEADER: Builder and History are separate navigable pages. -->
+  <header class="topbar">
+    <a class="brand" href="builder.html" aria-label="Linkloom builder home"><span class="brand-mark"><i></i><i></i><i></i></span><span><strong>LINKLOOM</strong><small>PERSONAL BRAND CAMPAIGNS</small></span></a>
+    <nav class="topnav" aria-label="Primary navigation"><a class="active" href="builder.html">Builder</a><a href="history.html">History</a><button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark theme">◐</button></nav>
+  </header>
+
+  <!-- BUILDER CONTENT: Contains the campaign form and live URL preview only. -->
+  <main id="builder" class="page-shell">
+    <section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><p class="eyebrow">CAMPAIGN LINK WORKBENCH</p><h1 id="hero-title">Make every<br><em>click count.</em></h1><p>Build consistent, trackable URLs for your personal brand — then keep every campaign ready to reuse.</p></div><div class="hero-stat-card"><span>LOCAL-FIRST</span><strong id="hero-count">0</strong><small>saved links in your campaign shelf</small></div></section>
+    <section class="builder-layout"><article class="card builder-card"><div class="card-heading"><div><p class="eyebrow">01 / BUILD</p><h2>Create a trackable link</h2></div><span class="card-index">UTM</span></div><div class="preset-bar"><label for="preset-select">Start with a template</label><select id="preset-select"><option value="">Choose a channel preset…</option></select></div><form id="builder-form" novalidate><div class="field full-field"><label for="base-url">Destination URL <span class="required">required</span></label><input id="base-url" name="baseUrl" type="url" inputmode="url" placeholder="https://yourname.com/book" autocomplete="url" required><small class="field-hint">The page people should land on.</small></div><div class="field full-field"><label for="link-label">Internal label <span class="optional">optional</span></label><input id="link-label" name="label" type="text" maxlength="80" placeholder="e.g. April LinkedIn launch"></div><div class="utm-heading"><span>CAMPAIGN PARAMETERS</span><small>recommended fields marked •</small></div><div class="utm-grid"><div class="field"><label for="utm-source">Source <b>•</b></label><input id="utm-source" name="utm_source" type="text" placeholder="linkedin"><small>Where traffic comes from</small></div><div class="field"><label for="utm-medium">Medium <b>•</b></label><input id="utm-medium" name="utm_medium" type="text" placeholder="social"><small>Marketing channel type</small></div><div class="field"><label for="utm-campaign">Campaign <b>•</b></label><input id="utm-campaign" name="utm_campaign" type="text" placeholder="spring-launch"><small>Shared campaign name</small></div><div class="field"><label for="utm-term">Term</label><input id="utm-term" name="utm_term" type="text" placeholder="coach"><small>Optional keyword</small></div><div class="field"><label for="utm-content">Content</label><input id="utm-content" name="utm_content" type="text" placeholder="hero-cta"><small>Differentiate creatives</small></div></div><div id="validation-box" class="validation-box" role="status" aria-live="polite"></div><div class="form-actions"><button id="reset-form" class="button secondary" type="button">Clear</button><button id="save-link" class="button primary" type="submit"><span>Save link</span><b>→</b></button></div></form></article><aside class="card preview-card"><div class="card-heading"><div><p class="eyebrow">02 / PREVIEW</p><h2>Your finished link</h2></div><span class="live-pill"><i></i> LIVE</span></div><div class="preview-url" id="preview-url">Enter a destination URL to begin.</div><div class="preview-meta"><span>PARAMETERS</span><strong id="parameter-count">0 / 3 recommended</strong></div><div class="preview-progress"><i id="parameter-progress"></i></div><div class="preview-tip"><span>✦</span><p><strong>Consistent naming wins.</strong><br>Use lowercase words and hyphens so your analytics stay easy to read.</p></div><button id="copy-preview" class="button outline" type="button" disabled>Copy preview URL</button></aside></section>
+  </main>
+
+  <!-- FEEDBACK REGION: Shared toast output for builder actions. -->
+  <div id="toast-region" class="toast-region" role="status" aria-live="polite"></div>
+  <footer class="footer"><span>LINKLOOM · Local-first UTM utility</span><span>No analytics. No account. Your links stay in this browser.</span></footer>
+  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/builder.js"></script>
+</body>
+</html>

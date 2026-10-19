@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editor — Marketing Copy Character Counter</title>
+  <meta name="description" content="Platform-aware copy workspace with live character counts, limit compliance, an explainable Copy Readiness Score and illustrative previews.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui,sans-serif' font-size='15' font-weight='700' fill='white' text-anchor='middle'%3E30%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body data-page="editor">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__mark" aria-hidden="true">30</span>
+        <span class="brand__text">
+          <span class="brand__name">Marketing Copy Counter</span>
+          <span class="brand__sub">Google Ads · X · Meta</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav">
+        <span aria-hidden="true">☰</span>
+        <span class="visually-hidden">Menu</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" data-nav aria-label="Main">
+        <a href="index.html" data-nav-link="home">Overview</a>
+        <a href="editor.html" data-nav-link="editor">Editor</a>
+        <a href="saved.html" data-nav-link="saved">
+          Saved copy
+          <span class="badge" data-saved-count hidden>0</span>
+        </a>
+        <a href="guide.html" data-nav-link="guide">Guide</a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Change theme">◐ Theme: system</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div data-storage-warning hidden></div>
+
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">Workspace</p>
+        <h1>Write, count, check.</h1>
+      </div>
+      <p class="page-head__note">
+        Each platform keeps its own working text — switching tabs never overwrites another format.
+        Press <kbd>Alt</kbd> + <kbd>1</kbd>–<kbd>3</kbd> to switch.
+      </p>
+    </div>
+
+    <div class="workspace" data-editor>
+      <div class="workspace__main">
+        <div class="tabs" data-platform-tabs role="tablist" aria-label="Platform"></div>
+        <div class="actions" data-editor-actions></div>
+        <div class="panel panel--editor" data-editor-panel></div>
+      </div>
+
+      <aside class="workspace__side" aria-label="Scores, preview and breakdown">
+        <section class="panel panel--summary" data-editor-summary aria-labelledby="readiness-title"></section>
+        <section class="panel panel--preview" data-editor-preview aria-label="Illustrative preview"></section>
+        <section class="panel panel--analysis" data-editor-analysis aria-labelledby="breakdown-title">
+          <h2 class="visually-hidden" id="breakdown-title">Score breakdown</h2>
+        </section>
+      </aside>
+    </div>
+
+    <section class="section section--tight" aria-labelledby="workspace-notes">
+      <h2 id="workspace-notes" class="section__title">Workspace notes</h2>
+      <ul class="notes">
+        <li>Counts update as you type. Hard limits block submission on the platform; display recommendations only warn about likely truncation.</li>
+        <li>Working text is stored per platform in this browser. “Clear fields” empties the working copy only — saved copy sets are untouched.</li>
+        <li>The Copy Readiness Score measures writing quality, never compliance. Both are shown, never merged.</li>
+        <li>Previews are illustrative. Verify final rendering in the platform's own ad preview tool.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p class="site-footer__brand">Marketing Copy Character Counter — built by Mr DAVE ADEX | DAVA TECK</p>
+      <p class="site-footer__meta">
+        <a href="guide.html#rules">Rules, sources and review dates</a> ·
+        <a href="guide.html#scoring">How scoring works</a> ·
+        © <span data-year>2026</span>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

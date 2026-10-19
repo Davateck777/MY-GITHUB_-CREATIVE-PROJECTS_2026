@@ -1,0 +1,29 @@
+{
+  "name": "marketing-copy-counter",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Marketing Copy Character Counter — platform-aware character counting, explainable copy-readiness scoring, and illustrative previews for Google Ads, X, and Meta ad copy.",
+  "author": "Mr DAVE ADEX | DAVA TECK",
+  "license": "MIT",
+  "keywords": [
+    "marketing",
+    "copywriting",
+    "character-counter",
+    "google-ads",
+    "twitter",
+    "meta-ads"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:dom": "node tests/dom.smoke.mjs",
+    "start": "node scripts/dev-server.mjs",
+    "serve": "python3 -m http.server 8080"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.0"
+  }
+}

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide — Marketing Copy Character Counter</title>
+  <meta name="description" content="How the counter works: platform rules and sources, counting methods, the Copy Readiness Score weights, storage and privacy, and known limitations.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui,sans-serif' font-size='15' font-weight='700' fill='white' text-anchor='middle'%3E30%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body data-page="guide">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__mark" aria-hidden="true">30</span>
+        <span class="brand__text">
+          <span class="brand__name">Marketing Copy Counter</span>
+          <span class="brand__sub">Google Ads · X · Meta</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav">
+        <span aria-hidden="true">☰</span>
+        <span class="visually-hidden">Menu</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" data-nav aria-label="Main">
+        <a href="index.html" data-nav-link="home">Overview</a>
+        <a href="editor.html" data-nav-link="editor">Editor</a>
+        <a href="saved.html" data-nav-link="saved">
+          Saved copy
+          <span class="badge" data-saved-count hidden>0</span>
+        </a>
+        <a href="guide.html" data-nav-link="guide">Guide</a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Change theme">◐ Theme: system</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">Reference</p>
+        <h1>Guide</h1>
+      </div>
+      <p class="page-head__note">Rules, counting methods, scoring weights, privacy and limitations — in one place, with review dates.</p>
+    </div>
+
+    <nav class="toc" aria-label="On this page">
+      <a href="#start">Getting started</a>
+      <a href="#rules">Platform rules</a>
+      <a href="#counting">Counting methods</a>
+      <a href="#scoring">Scoring</a>
+      <a href="#previews">Previews</a>
+      <a href="#privacy">Privacy &amp; storage</a>
+      <a href="#limitations">Limitations</a>
+      <a href="#notices">Third-party notices</a>
+    </nav>
+
+    <section class="section section--tight" id="start" aria-labelledby="start-title">
+      <h2 id="start-title" class="section__title">Getting started</h2>
+      <ol class="steps">
+        <li><strong>Choose a platform tab.</strong> Google Ads, X and Meta each hold their own working text, so nothing is overwritten when you switch.</li>
+        <li><strong>Paste or write your copy.</strong> Counts, remaining allowance and statuses update as you type.</li>
+        <li><strong>Read the two signals.</strong> Limit compliance tells you whether the copy fits. The Copy Readiness Score tells you how it reads.</li>
+        <li><strong>Save or export.</strong> Save a named copy set for later, copy a field or the whole set, or export plain text and a JSON backup.</li>
+      </ol>
+      <p class="hint">Running locally: serve the folder over HTTP (for example <code>npx serve .</code>) so ES modules load. Opening the HTML files directly from disk will block module imports in most browsers.</p>
+    </section>
+
+    <section class="section" id="rules" aria-labelledby="rules-title">
+      <h2 id="rules-title" class="section__title">Platform rules</h2>
+      <p class="section__lede">
+        Rules were reviewed on <strong>19 October 2026</strong>. Every limit below is stored in
+        <code>js/platforms.js</code> with its source URL and review date, so a change is a one-file edit.
+      </p>
+
+      <div class="table-wrap">
+        <table class="rules-table">
+          <caption>Supported formats, limits and counting methods</caption>
+          <thead>
+            <tr>
+              <th scope="col">Platform / placement</th>
+              <th scope="col">Field</th>
+              <th scope="col">Limit</th>
+              <th scope="col">Type</th>
+              <th scope="col">Counting method</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="rowgroup" rowspan="4">Google Ads<br><span class="muted">Responsive search ad</span></th>
+              <td>Headlines (3–15 assets)</td>
+              <td>30 each</td>
+              <td><span class="tag tag--hard">Hard</span></td>
+              <td>Display width — CJK double-width counts 2</td>
+            </tr>
+            <tr>
+              <td>Descriptions (2–4 assets)</td>
+              <td>90 each</td>
+              <td><span class="tag tag--hard">Hard</span></td>
+              <td>Display width</td>
+            </tr>
+            <tr>
+              <td>Display path 1</td>
+              <td>15</td>
+              <td><span class="tag tag--hard">Hard</span></td>
+              <td>Display width</td>
+            </tr>
+            <tr>
+              <td>Display path 2</td>
+              <td>15</td>
+              <td><span class="tag tag--hard">Hard</span></td>
+              <td>Display width</td>
+            </tr>
+            <tr>
+              <th scope="row">X<br><span class="muted">Standard post</span></th>
+              <td>Post text</td>
+              <td>280 weighted</td>
+              <td><span class="tag tag--hard">Hard</span></td>
+              <td>twitter-text weighted length; URLs count 23</td>
+            </tr>
+            <tr>
+              <th scope="rowgroup" rowspan="3">Meta<br><span class="muted">Feed ad — single image or video</span></th>
+              <td>Primary text</td>
+              <td>125 visible</td>
+              <td><span class="tag tag--soft">Recommendation</span></td>
+              <td>Unicode code points</td>
+            </tr>
+            <tr>
+              <td>Headline</td>
+              <td>40 (≈27 on Facebook Feed)</td>
+              <td><span class="tag tag--soft">Recommendation</span></td>
+              <td>Unicode code points</td>
+            </tr>
+            <tr>
+              <td>Description</td>
+              <td>30</td>
+              <td><span class="tag tag--soft">Recommendation</span></td>
+              <td>Unicode code points</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subhead">Sources</h3>
+      <ul class="source-list">
+        <li>
+          <a href="https://support.google.com/google-ads/answer/7684791" rel="noopener noreferrer">About responsive search ads — Google Ads Help</a>
+          <span class="muted">30-character headlines, 90-character descriptions, 15 headlines / 4 descriptions; double-width characters count as 2.</span>
+        </li>
+        <li>
+          <a href="https://support.google.com/google-ads/answer/17092074" rel="noopener noreferrer">Search campaigns specs and format requirements — Google Ads Help</a>
+          <span class="muted">Text asset specification table for responsive search ads.</span>
+        </li>
+        <li>
+          <a href="https://github.com/twitter/twitter-text" rel="noopener noreferrer">twitter-text — official X counting library</a>
+          <span class="muted">v2 configuration: 280 weighted characters, <code>transformedURLLength = 23</code>, emoji weighting.</span>
+        </li>
+        <li>
+          <a href="https://help.x.com/en/using-x/counting-characters" rel="noopener noreferrer">Counting characters — X Help Center</a>
+          <span class="muted">Standard post limit and link shortening behaviour.</span>
+        </li>
+        <li>
+          <a href="https://www.facebook.com/business/ads-guide" rel="noopener noreferrer">Meta Ads Guide</a>
+          <span class="muted">Recommended primary text, headline and description lengths by placement.</span>
+        </li>
+        <li>
+          <a href="https://www.facebook.com/business/help/223764258858791" rel="noopener noreferrer">Meta Business Help Center — text in ads</a>
+          <span class="muted">Recommended lengths; overlong text may be truncated depending on placement and device.</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="section" id="counting" aria-labelledby="counting-title">
+      <h2 id="counting-title" class="section__title">Counting methods</h2>
+      <div class="method-grid">
+        <article class="method">
+          <h3>Unicode code points</h3>
+          <p>Each visible character counts as 1, including emoji and CJK characters. Used for Meta, where counts describe a display window rather than a submission rule.</p>
+        </article>
+        <article class="method">
+          <h3>Display width (Google)</h3>
+          <p>Characters count 1, except double-width characters in Chinese, Japanese and Korean scripts, which count 2. Non-BMP characters such as emoji are also counted as 2 here — a conservative assumption the Google help pages do not specify.</p>
+        </article>
+        <article class="method">
+          <h3>X weighted length</h3>
+          <p>Latin and most other scripts count 1, CJK characters count 2, emoji count 2, and every URL counts 23 regardless of real length. Computed by the bundled official parser, so parser-reported invalid characters surface as a warning too.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="scoring" aria-labelledby="scoring-title">
+      <h2 id="scoring-title" class="section__title">How the Copy Readiness Score works</h2>
+      <p class="section__lede">Six checks, published weights, and a full deduction list. Limit compliance is deliberately excluded — see below.</p>
+
+      <div class="table-wrap">
+        <table class="rules-table">
+          <caption>Readiness checks, weights and what they penalise</caption>
+          <thead>
+            <tr>
+              <th scope="col">Check</th>
+              <th scope="col">Weight</th>
+              <th scope="col">What it looks at</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Scanability &amp; sentence length</th><td>25</td><td>Sentences over 20 words, average sentence length, unbroken blocks of text.</td></tr>
+            <tr><th scope="row">Specificity &amp; concrete detail</th><td>20</td><td>Numbers, time frames, prices and action verbs earn points; listed vague phrases and jargon lose them.</td></tr>
+            <tr><th scope="row">Capitalisation discipline</th><td>15</td><td>Words of four or more characters in full capitals, and fields that are mostly uppercase.</td></tr>
+            <tr><th scope="row">Repetition control</th><td>15</td><td>Content words used more than twice and repeated two-word phrases across the set.</td></tr>
+            <tr><th scope="row">Keyword coverage</th><td>15</td><td>Whether each optional target keyword appears. <strong>Excluded entirely when the keyword field is empty.</strong></td></tr>
+            <tr><th scope="row">Message coverage</th><td>10</td><td>Required fields that contain text.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h3>Weights re-normalise</h3>
+        <p>If a check is unavailable it is removed from the denominator rather than scored as zero. An empty keyword field cannot lower your score. The interface lists which checks were excluded.</p>
+      </div>
+
+      <div class="callout callout--warn">
+        <h3>Compliance is separate</h3>
+        <p>The readiness score never includes character limits. A message can fit perfectly and still be vague, so the app reports <em>Within limit / Near limit / Over limit / Beyond display recommendation</em> independently.</p>
+      </div>
+
+      <h3 class="subhead">Grade bands</h3>
+      <ul class="bands">
+        <li><span class="tone tone--excellent">Strong</span> 85–100</li>
+        <li><span class="tone tone--good">Good</span> 70–84</li>
+        <li><span class="tone tone--caution">Needs work</span> 50–69</li>
+        <li><span class="tone tone--poor">Weak</span> 0–49</li>
+      </ul>
+      <p class="hint">This score is a writing-quality heuristic built from transparent rules. It is not Google Ads Quality Score, not an approval, and not a performance forecast.</p>
+    </section>
+
+    <section class="section" id="previews" aria-labelledby="previews-title">
+      <h2 id="previews-title" class="section__title">Previews</h2>
+      <p>Previews rebuild an approximate layout — a Google search result block, an X post, a Meta feed card — with a mobile/desktop width switch. They exist to test reading order and first-glance impression.</p>
+      <p>The Google preview has two modes: <strong>As served</strong> shows up to three headlines and two descriptions, the most that can appear together; <strong>All assets</strong> lists every filled asset, which is how you audit the headlines and descriptions that will not be on screen at the same time.</p>
+      <p>They do not reproduce real rendering. Truncation depends on the placement, the device, the viewer's font-size setting, the language and the platform's layout engine. Always confirm in the platform's own preview tool before publishing.</p>
+    </section>
+
+    <section class="section" id="privacy" aria-labelledby="privacy-title">
+      <h2 id="privacy-title" class="section__title">Privacy and storage</h2>
+      <ul class="notes">
+        <li>All counting and analysis runs in your browser. There is no backend, no API key and no external service; the X parser is bundled locally.</li>
+        <li>Working copy, saved sets and settings live in <code>localStorage</code> under the <code>mccc</code> namespace. Nothing is transmitted anywhere.</li>
+        <li>Storage is not encrypted and not synced. Anyone with access to this browser profile can read it. Do not store confidential client copy on a shared machine.</li>
+        <li>Clearing site data deletes saved sets. Export a JSON backup first.</li>
+        <li>If storage is disabled or full, the app says so and keeps counting; only persistence is affected.</li>
+        <li>No cookies, no analytics, no trackers, no fonts or scripts loaded from third-party hosts.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="limitations" aria-labelledby="limitations-title">
+      <h2 id="limitations-title" class="section__title">Known limitations</h2>
+      <ul class="notes">
+        <li><strong>Scope:</strong> standard X posts only — no premium long posts, threads or polls. Google Ads covers responsive search ad text assets, not Performance Max, Demand Gen or callouts. Meta covers one clearly labelled feed-ad preset.</li>
+        <li><strong>Emoji on Google:</strong> Google does not publish how emoji are counted. This app counts them as 2, which can under-report your allowance. The live Google Ads editor is authoritative.</li>
+        <li><strong>Thai and other combining scripts:</strong> Google documents double-width CJK only. Combining marks are counted per code point here; verify in the ad editor.</li>
+        <li><strong>Meta numbers are recommendations.</strong> Ads Manager accepts far longer text; only the visible portion is counted here.</li>
+        <li><strong>Keyword matching</strong> is a plain case-insensitive substring check, not stemming or semantic matching.</li>
+        <li><strong>Accessibility:</strong> tested with keyboard navigation and screen-reader semantics, but not audited against every assistive technology combination.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="notices" aria-labelledby="notices-title">
+      <h2 id="notices-title" class="section__title">Third-party notices</h2>
+      <p>
+        X weighted counting uses <strong>twitter-text 3.1.0</strong> (© Twitter, Inc.), licensed under the
+        Apache License 2.0. The library is vendored unmodified in logic at
+        <code>vendor/twitter-text.js</code> and bundled with esbuild; no counting logic was rewritten.
+        The full licence text ships in <code>THIRD-PARTY-NOTICES.md</code> and in the bundle header.
+      </p>
+      <p>No other third-party code, fonts, images or services are used.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p class="site-footer__brand">Marketing Copy Character Counter — built by Mr DAVE ADEX | DAVA TECK</p>
+      <p class="site-footer__meta">Rules reviewed 19 October 2026 · <a href="index.html">Overview</a> · <a href="editor.html">Editor</a> · © <span data-year>2026</span></p>
+    </div>
+  </footer>
+</body>
+</html>

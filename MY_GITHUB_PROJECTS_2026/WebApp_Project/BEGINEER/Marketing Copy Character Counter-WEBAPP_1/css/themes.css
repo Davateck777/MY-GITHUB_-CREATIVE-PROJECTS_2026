@@ -1,0 +1,116 @@
+/* themes.css — design tokens for light and dark themes.
+   Every colour used by the interface is declared here as a custom property;
+   styles.css never hard-codes a colour value. */
+
+:root {
+  color-scheme: light;
+
+  /* surfaces */
+  --bg: #f4f6fb;
+  --bg-gradient: radial-gradient(1200px 600px at 12% -10%, #e8efff 0%, transparent 60%),
+                 radial-gradient(900px 500px at 100% 0%, #eef2ff 0%, transparent 55%);
+  --surface: #ffffff;
+  --surface-2: #f8fafd;
+  --surface-3: #eef2f9;
+  --border: #dde3ee;
+  --border-strong: #c3ccdd;
+
+  /* text */
+  --text: #131720;
+  --text-muted: #5a6475;
+  --text-faint: #7d879a;
+  --text-inverse: #ffffff;
+
+  /* brand */
+  --accent: #2f5fe0;
+  --accent-strong: #1f47b8;
+  --accent-ink: #14306f;
+  --accent-soft: #e7eeff;
+  --accent-contrast: #ffffff;
+
+  /* semantic */
+  --ok: #0d6b47;
+  --ok-soft: #e2f5ec;
+  --ok-border: #a7dcc4;
+  --warn: #8a5300;
+  --warn-soft: #fdf0dc;
+  --warn-border: #f0cf9c;
+  --danger: #a8241c;
+  --danger-soft: #fde9e7;
+  --danger-border: #f3b7b2;
+  --info: #1b4c8c;
+  --info-soft: #e8f0fb;
+  --info-border: #b7cee9;
+
+  /* preview chrome */
+  --pv-surface: #ffffff;
+  --pv-border: #e4e7ec;
+  --pv-muted: #6b7280;
+  --pv-link: #1a0dab;
+  --pv-x-link: #1d9bf0;
+  --pv-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.06);
+
+  /* geometry */
+  --radius-xs: 6px;
+  --radius-s: 10px;
+  --radius-m: 14px;
+  --radius-l: 20px;
+  --radius-pill: 999px;
+  --shadow-s: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-m: 0 4px 12px rgba(16, 24, 40, 0.07), 0 12px 32px rgba(16, 24, 40, 0.06);
+  --shadow-l: 0 18px 48px rgba(16, 24, 40, 0.16);
+
+  /* type */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --maxw: 1280px;
+  --header-h: 68px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0b1017;
+  --bg-gradient: radial-gradient(1200px 600px at 10% -10%, #14243f 0%, transparent 60%),
+                 radial-gradient(900px 500px at 100% 0%, #161d33 0%, transparent 55%);
+  --surface: #121a24;
+  --surface-2: #16202c;
+  --surface-3: #1c2735;
+  --border: #26313f;
+  --border-strong: #374557;
+
+  --text: #e9eef7;
+  --text-muted: #a3b0c2;
+  --text-faint: #8492a6;
+  --text-inverse: #0b1017;
+
+  --accent: #6f9dff;
+  --accent-strong: #98b8ff;
+  --accent-ink: #cddcff;
+  --accent-soft: #1b2a45;
+  --accent-contrast: #08101d;
+
+  --ok: #5fd3a0;
+  --ok-soft: #10281f;
+  --ok-border: #245a45;
+  --warn: #f0b465;
+  --warn-soft: #2b2113;
+  --warn-border: #5c4620;
+  --danger: #ff8f85;
+  --danger-soft: #2e1717;
+  --danger-border: #6a2f2c;
+  --info: #93bcff;
+  --info-soft: #152437;
+  --info-border: #2c4767;
+
+  --pv-surface: #0f1620;
+  --pv-border: #26313f;
+  --pv-muted: #93a1b5;
+  --pv-link: #8ab4ff;
+  --pv-x-link: #5ab8f5;
+  --pv-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.35);
+
+  --shadow-s: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-m: 0 8px 26px rgba(0, 0, 0, 0.42);
+  --shadow-l: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
