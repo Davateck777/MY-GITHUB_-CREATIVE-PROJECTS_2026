@@ -26,6 +26,7 @@ says something else, that is a bug worth reporting.
 | [Part 2](#part-2--the-three-platforms) | G–I | X weighting, Meta recommendations, keyword handling |
 | [Part 3](#part-3--saving-and-moving-copy) | J–M | Working copies, saving, exporting, importing, rejection |
 | [Part 4](#part-4--interface-and-failure) | N–P | Previews, themes, keyboard, mobile, storage failure |
+| [Part 5](#part-5--production-v100) | Q–T | Offline, install, preview identity, delete-all-data |
 | [Log](#results-log) | — | Record pass/fail |
 | [Never see this](#you-should-never-see-this) | — | Regression guards |
 
@@ -719,3 +720,122 @@ Kept here as a record, so the same defects are not re-introduced:
 | `No link in the copy` suggested on Meta and Google | **Fixed** — the link suggestion is scoped to X |
 | "Google Ads" wrapped mid-word in the mobile tab strip | **Fixed** — all three tabs fit one row at 390 px |
 | Browser "leave site?" prompt on reload after typing, despite the draft already being saved | **Fixed** — the guard was removed rather than left lying to the user |
+
+
+---
+
+# Part 5 — Production (v1.0.0)
+
+Added for the 1.0 release. These four scenarios exercise what separates a demo from a
+shipped app: it works without a network, it carries your brand, and it can delete
+everything it stored.
+
+## Scenario Q — It works with no connection
+
+**Goal:** copy prepared on a train, in a lift, or behind a flaky office proxy.
+
+1. Load the app **once** with the network on.
+2. DevTools → **Application → Service Workers**. You should see one active worker with
+   scope `/`.
+3. DevTools → **Network → Offline** (or turn off Wi-Fi).
+4. Reload the page.
+
+| Check | Expected |
+| --- | --- |
+| The page loads | yes — no dinosaur page |
+| Editor fields | present and usable |
+| Typing a headline | counts and colours still update |
+| Switching to X and typing | weighted count still updates |
+| Saving a set | works — `Saved "<name>".` |
+| Opening **Saved copy** while offline | loads, and the set is listed |
+
+- [ ] Reloads offline with no error page
+- [ ] Counting and scoring still work offline
+- [ ] Saving still works offline
+
+---
+
+## Scenario R — Install it like an app
+
+**Goal:** a marketer wants this one click away, not buried in a bookmark folder.
+
+1. With the network on, look for the install control:
+   - **Chrome / Edge:** install icon in the address bar, or menu → *Install…*
+   - **Android Chrome:** menu → *Add to Home screen*
+   - **Safari (macOS):** Share → *Add to Dock*
+2. Install, then open the installed app.
+
+| Check | Expected |
+| --- | --- |
+| App name | `Marketing Copy Counter` |
+| Icon | blue rounded square with `30` |
+| Opens to | the editor, without browser chrome |
+| Long-press / right-click the icon | shortcuts: Editor, Saved, Guide |
+| Footer | `© 2026 · v1.0.0 · production` |
+
+- [ ] Installable, with a maskable icon that is not cropped on Android
+- [ ] Starts on the editor
+
+---
+
+## Scenario S — Previews carry your brand
+
+**Goal:** a preview is only useful if it looks like *your* ad.
+
+1. Editor → **Illustrative preview** → open **Preview identity**.
+2. Enter brand name `Acme Boilers`, handle `acmeboilers`, domain `acme.example`.
+3. Watch the preview as you type — the cursor must stay in the field.
+4. Check each platform tab.
+
+| Where | You should see |
+| --- | --- |
+| Google preview URL line | `acme.example` |
+| X preview | name `Acme Boilers`, handle `@acmeboilers`, avatar letter `A` |
+| Meta preview | name `Acme Boilers`, avatar `A`, domain `ACME.EXAMPLE` (uppercased, as Meta renders it) |
+| Reload the page | all three still show your identity |
+
+- [ ] Typing in the identity fields does not steal focus
+- [ ] All three previews use the identity
+- [ ] Identity survives a reload
+
+---
+
+## Scenario T — Delete everything
+
+**Goal:** a freelancer handing back a shared laptop must be able to leave no copy behind.
+
+1. Save two sets so there is something to lose.
+2. **Saved copy** → *Your data* panel.
+
+| Where | You should see |
+| --- | --- |
+| Panel line | `2 saved sets · about N KB in this browser · not encrypted, not synced` |
+| Buttons | `Download backup` / `Delete all data` |
+
+3. Click **Delete all data**.
+
+| Step | Expected |
+| --- | --- |
+| Step 1 dialog | `Delete all data from this browser?` with the count of sets and a warning that it cannot be undone; buttons `Keep everything` / `Choose what to delete` |
+| Cancelling | nothing changes — both sets still listed |
+| Step 2 dialog | `Confirm deletion` with `Cancel` / `Backup, then delete` / `Delete everything` |
+| Choosing *Delete everything* | report `Deleted N local storage items. The app has been reset to its defaults.` |
+| Afterwards | the library is empty; the page reloads to a clean state |
+
+4. Confirm in DevTools → **Application → Local Storage**: every `mccc:` key is gone.
+
+- [ ] Two-step confirmation, with a backup option
+- [ ] Cancelling at either step loses nothing
+- [ ] No `mccc:` keys remain afterwards
+
+---
+
+## A failure I should never see (production)
+
+| Never | Why |
+| --- | --- |
+| A blank white page after an error | the error boundary must show a banner and a reload button |
+| An available offline update that swaps with no notice | updates arrive as a "Reload to update" prompt |
+| A preview showing `Your Brand` after I set my own identity | the identity must drive every preview |
+| DevTools → Application → Cache Storage empty while online | the shell should be cached after the first load |
+| A console message beginning `Refused to` | that is a CSP violation; the app must ship no inline code |

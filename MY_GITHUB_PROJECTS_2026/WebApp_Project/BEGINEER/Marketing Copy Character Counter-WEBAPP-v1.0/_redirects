@@ -1,0 +1,5 @@
+# Netlify / Cloudflare Pages. GitHub Pages ignores this file (nothing to redirect there).
+/editor        /editor.html        301
+/saved         /saved.html         301
+/guide         /guide.html         301
+/home          /index.html         301

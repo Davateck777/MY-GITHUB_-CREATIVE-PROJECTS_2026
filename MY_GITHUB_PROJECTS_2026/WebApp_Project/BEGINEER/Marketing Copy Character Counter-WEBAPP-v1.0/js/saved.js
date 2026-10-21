@@ -17,6 +17,8 @@ import {
   saveWorking,
   saveKeywords,
   storageFootprint,
+  clearAllData,
+  storageAvailable,
   newId
 } from './storage.js';
 import {
@@ -67,6 +69,8 @@ export function initSaved() {
 
   root.querySelector('[data-export-all]')?.addEventListener('click', exportAll);
   root.querySelector('[data-import-input]')?.addEventListener('change', onImportFile);
+  root.querySelector('[data-wipe-all]')?.addEventListener('click', wipeAllData);
+  root.querySelector('[data-export-all-2]')?.addEventListener('click', exportAll);
 
   sets = listSets();
   render();
@@ -114,6 +118,99 @@ function render() {
       })
     );
   }
+
+  renderDataPanel();
+}
+
+/**
+ * "Your data" panel: what is stored, how to take it with you, and how to remove
+ * every trace of it from this browser in one action.
+ */
+function renderDataPanel() {
+  const host = document.querySelector('[data-data-panel]');
+  if (!host) return;
+  clear(host);
+
+  const available = storageAvailable();
+  const bytes = storageFootprint();
+  const kilobytes = Math.max(1, Math.round(bytes / 1024));
+
+  host.append(
+    el('div', { className: 'data-panel' }, [
+      el('div', { className: 'data-panel__facts' }, [
+        el('h2', { className: 'data-panel__title', text: 'Your data' }),
+        el('p', {
+          className: 'data-panel__line',
+          text: available
+            ? `${sets.length} saved set${sets.length === 1 ? '' : 's'} · about ${kilobytes} KB in this browser · not encrypted, not synced`
+            : 'Local storage is unavailable in this browser, so nothing can be stored or removed.'
+        })
+      ]),
+      el('div', { className: 'data-panel__actions' }, [
+        el('button', {
+          type: 'button',
+          className: 'btn btn--small',
+          dataset: { exportAll2: 'true' },
+          disabled: !sets.length,
+          on: { click: exportAll }
+        }, ['Download backup']),
+        el('button', {
+          type: 'button',
+          className: 'btn btn--small btn--danger',
+          dataset: { wipeAll: 'true' },
+          disabled: !available,
+          on: { click: wipeAllData }
+        }, ['Delete all data'])
+      ])
+    ])
+  );
+}
+
+/** Two-step, explicit, irreversible. The only correct way to offer this. */
+async function wipeAllData() {
+  const first = await confirmAction({
+    title: 'Delete all data from this browser?',
+    body: `This removes ${sets.length} saved copy set${sets.length === 1 ? '' : 's'}, every platform working copy, your keywords and your settings. It cannot be undone.`,
+    confirmLabel: 'Choose what to delete',
+    cancelLabel: 'Keep everything',
+    danger: true
+  });
+  if (!first) return;
+
+  const second = await choiceDialog({
+    title: 'Confirm deletion',
+    body: 'Download a backup first if there is any chance you will want this copy again.',
+    options: [
+      { id: 'cancel', label: 'Cancel', variant: 'ghost' },
+      { id: 'backup', label: 'Backup, then delete' },
+      { id: 'delete', label: 'Delete everything', variant: 'danger' }
+    ]
+  });
+  if (!second || second === 'cancel') return;
+
+  if (second === 'backup' && sets.length) exportAll();
+
+  const result = clearAllData();
+  if (!result.ok) {
+    report({ errors: [result.error] });
+    return;
+  }
+
+  toast('All local data deleted.', 'success');
+  announce('All saved copy, working copies and settings were deleted from this browser.');
+  report({
+    errors: [],
+    warnings: [],
+    summary: `Deleted ${result.removed.length} local storage item${result.removed.length === 1 ? '' : 's'}. The app has been reset to its defaults.`
+  });
+
+  sets = [];
+  render();
+  reflectBadge();
+  window.dispatchEvent(new CustomEvent('mccc:saved-changed'));
+
+  // Working copies on the editor page are gone; reload so the UI matches storage.
+  window.setTimeout(() => window.location.reload(), 1200);
 }
 
 function setCard(set) {

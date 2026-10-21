@@ -9,7 +9,7 @@
  * re-rendered, from the same pure functions the tests exercise.
  */
 
-import { PLATFORMS, COUNTING_METHODS, getPlatform } from './platforms.js';
+import { PLATFORMS, COUNTING_METHODS, RULES_REVIEWED, getPlatform } from './platforms.js';
 import {
   measurePlatform,
   parseXText,
@@ -25,6 +25,8 @@ import {
   saveKeywords,
   loadSettings,
   saveSettings,
+  savePreviewBrand,
+  normaliseBrand,
   upsertSet,
   listSets,
   newId
@@ -51,6 +53,7 @@ const state = {
   targets: {},
   device: 'mobile',
   assetMode: 'shown',
+  brand: { name: 'Your brand', domain: 'yourbrand.com', handle: 'yourbrand' },
   sets: []
 };
 
@@ -82,6 +85,7 @@ export function initEditor() {
       : 'google';
   state.device = settings.previewDevice === 'desktop' ? 'desktop' : 'mobile';
   state.targets = settings.targets && typeof settings.targets === 'object' ? settings.targets : {};
+  state.brand = normaliseBrand(settings.previewBrand);
   state.keywords = loadKeywords();
 
   for (const platform of PLATFORMS) {
@@ -362,6 +366,7 @@ function renderPlatform(platformId) {
       el('h2', { className: 'editor__title', text: `${platform.label} · ${platform.placement}` }),
       el('p', { className: 'editor__summary', text: platform.summary }),
       el('p', { className: 'editor__rules', text: platform.rulesNote }),
+      rulesFreshnessNotice(),
       el(
         'ul',
         { className: 'editor__methods' },
@@ -387,6 +392,18 @@ function renderPlatform(platformId) {
   panel.addEventListener('blur', onPanelBlur, true);
 
   updateOutputs();
+}
+
+/** Warn (quietly) when the stored platform rules have not been reviewed in a while. */
+function rulesFreshnessNotice() {
+  const reviewed = new Date(`${RULES_REVIEWED}T00:00:00Z`);
+  if (Number.isNaN(reviewed.getTime())) return null;
+  const days = Math.floor((Date.now() - reviewed.getTime()) / 86400000);
+  if (days <= 180) return null;
+  return el('p', { className: 'notice notice--warning', role: 'status' }, [
+    `Platform rules were last reviewed ${days} days ago (${RULES_REVIEWED}). `,
+    'Confirm the current limits on the platform before submitting copy.'
+  ]);
 }
 
 function fieldHeader(field) {
@@ -995,7 +1012,58 @@ function renderPreviewPanel(platform, values) {
     );
   }
 
-  previewRoot.append(renderPreview(platform, values, { device: state.device, asset: state.assetMode }));
+  previewRoot.append(brandControls());
+
+  const frame = el('div', { className: 'preview-slot', dataset: { previewSlot: 'true' } });
+  previewRoot.append(frame);
+  paintPreviewFrame();
+}
+
+/** Only the rendered preview is replaced, so typing in the identity fields keeps focus. */
+function paintPreviewFrame() {
+  const slot = previewRoot.querySelector('[data-preview-slot]');
+  if (!slot) return;
+  clear(slot);
+  slot.append(
+    renderPreview(currentPlatform(), currentValues(), {
+      device: state.device,
+      asset: state.assetMode,
+      brand: state.brand
+    })
+  );
+}
+
+function brandControls() {
+  const field = (key, label, placeholder, transform) =>
+    el('div', { className: 'brand-field' }, [
+      el('label', { className: 'brand-field__label', for: `brand-${key}`, text: label }),
+      el('input', {
+        id: `brand-${key}`,
+        type: 'text',
+        className: 'input input--brand',
+        value: state.brand[key],
+        placeholder,
+        autocomplete: 'off',
+        dataset: { brand: key, transform: transform ?? '' },
+        on: {
+          input: (event) => {
+            state.brand = normaliseBrand({ ...state.brand, [key]: event.target.value });
+            savePreviewBrand(state.brand);
+            paintPreviewFrame();
+          }
+        }
+      })
+    ]);
+
+  return el('details', { className: 'brand-details' }, [
+    el('summary', { className: 'brand-details__summary', text: 'Preview identity' }),
+    el('p', { className: 'brand-details__hint', text: 'Used only in the illustrative previews below. Stored in this browser.' }),
+    el('div', { className: 'brand-fields' }, [
+      field('name', 'Brand name', 'Your brand'),
+      field('handle', 'X handle', 'yourbrand'),
+      field('domain', 'Domain', 'yourbrand.com')
+    ])
+  ]);
 }
 
 function assetModeButton(value, label) {
@@ -1007,7 +1075,7 @@ function assetModeButton(value, label) {
     on: {
       click: () => {
         state.assetMode = value;
-        renderPreviewPanel(currentPlatform(), currentValues());
+        paintPreviewFrame();
         announce(value === 'all' ? 'Showing all assets.' : 'Showing only assets that can serve together.');
       }
     }
@@ -1026,7 +1094,7 @@ function deviceButton(value, label) {
         state.device = value;
         const settings = loadSettings();
         saveSettings({ ...settings, previewDevice: value });
-        renderPreviewPanel(currentPlatform(), currentValues());
+        paintPreviewFrame();
         announce(`${label} preview selected.`);
       }
     }

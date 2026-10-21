@@ -6,10 +6,13 @@ writing feedback line by line.
 
 Built by **Mr DAVE ADEX | DAVA TECK**.
 
+**v1.0.0 · production** — installable, works offline, and holds no data anywhere but your browser.
+
 - HTML5 + CSS3 + vanilla JavaScript ES modules
 - No framework, no build step, no backend, no API keys, no network calls
 - X counting uses the **official `twitter-text` parser (v3.1.0)**, bundled locally
-- 61 tests with Node's built-in test runner, plus an optional DOM smoke test
+- 73 tests with Node's built-in test runner, plus an optional DOM smoke test
+- Service worker offline support, PWA manifest, CSP on every page
 - Light and dark themes, full keyboard support
 
 ---
@@ -96,6 +99,8 @@ platforms.js ──► counter.js ──► analysis.js
 | `js/ui.js` | Accessible primitives: elements, pills, meters, dialogs, toasts, clipboard |
 | `js/app.js` | Shared page behaviour: theme, nav, storage banner |
 | `js/main.js` | Single entry point |
+| `js/version.js` | Release identity: version, cache name, footer stamp |
+| `sw.js` | Offline shell cache, update prompt, cross-page offline navigation |
 
 **Changing a platform rule** is a one-file edit in `js/platforms.js`. Update the limit,
 the `limitType`, and the source note — the counter, editor, preview and tests all read
@@ -119,6 +124,12 @@ leaves counting fully functional.
 
 ```
 marketing-copy-counter/
+├── sw.js                 Service worker (offline shell, update prompt)
+├── manifest.webmanifest  PWA manifest
+├── icons/                App icons (SVG + PNG, maskable)
+├── _headers              Netlify / Cloudflare Pages headers + CSP
+├── _redirects            Netlify / Cloudflare Pages clean URLs
+├── vercel.json           Vercel headers and clean URLs
 ├── index.html            Overview and rules summary
 ├── editor.html           Platform-aware workspace
 ├── saved.html            Saved copy management
@@ -128,6 +139,7 @@ marketing-copy-counter/
 │   └── themes.css        All colour tokens (light + dark)
 ├── js/
 │   ├── main.js           Entry point
+│   ├── version.js        Release identity (version + cache name)
 │   ├── app.js            Shared page behaviour
 │   ├── platforms.js      Rules and source metadata
 │   ├── counter.js        Counting and compliance
@@ -148,6 +160,8 @@ marketing-copy-counter/
 ├── scripts/
 │   └── dev-server.mjs    Zero-dependency static server
 ├── USER-TEST-DATA.md     Hands-on walkthrough: 16 scenarios, exact expected text
+├── CHANGELOG.md          Version history
+├── RELEASE-NOTES-v1.0.md What shipped in 1.0 and how it was verified
 ├── TEST-DATA.md          Fixtures, boundaries, manual checklist
 ├── THIRD-PARTY-NOTICES.md
 ├── README.md
@@ -185,30 +199,56 @@ search all work end to end.
 
 ## Deployment
 
-Static hosting only — no build, no environment variables.
-
-**GitHub Pages**
+Static hosting only — no build step, no environment variables, no server.
 
 ```bash
-git init && git add . && git commit -m "Marketing Copy Character Counter"
+# GitHub Pages
+git init && git add . && git commit -m "Marketing Copy Character Counter v1.0.0"
 git branch -M main
 git remote add origin https://github.com/<user>/<repo>.git
 git push -u origin main
-# Settings → Pages → Source: Deploy from branch → main / (root)
+# Settings -> Pages -> Source: Deploy from branch -> main / (root)
+
+# Netlify (drag the folder, or CLI)
+npx netlify deploy --prod --dir .
+
+# Vercel
+npx vercel --prod          # framework preset: Other, output directory: .
+
+# Cloudflare Pages: build command empty, output directory /
 ```
 
-**Netlify:** drag the project folder onto the Netlify dashboard, or set
-build command `none` and publish directory `.`.
+**Serve over HTTPS.** The service worker and the clipboard API both require a secure
+origin (`localhost` is treated as secure for development).
 
-**Vercel:** `vercel --prod` from the project folder; framework preset **Other**,
-output directory `.`.
+### Included production config
 
-**Cloudflare Pages:** connect the repo, build command empty, output directory `/`.
+| File | Purpose |
+| --- | --- |
+| `_headers` | CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, cache rules (Netlify, Cloudflare Pages) |
+| `_redirects` | `/editor`, `/saved`, `/guide`, `/home` clean URLs |
+| `vercel.json` | Same headers and clean URLs for Vercel |
+| per-page `<meta http-equiv="Content-Security-Policy">` | GitHub Pages, which cannot send custom headers |
 
-Serve over HTTPS or localhost so the clipboard API works; the app falls back to
-`document.execCommand('copy')` on insecure origins.
+`sw.js` must stay at the site root and must not be cached — both `_headers` and
+`vercel.json` set `Cache-Control: no-cache` for it.
 
----
+### Releasing an update
+
+1. Edit the app.
+2. Bump `VERSION` in **`js/version.js`** (the cache name, footer stamp and release
+   checks all follow it).
+3. Run `npm test` — it fails if `sw.js`, `package.json`, the manifest, the precache list
+   or the CSP disagree with the new version.
+4. Deploy. Returning users see a "Reload to update" prompt; their saved copy is untouched.
+
+### Post-deploy smoke test (2 minutes)
+
+1. Open the site. DevTools → Application → Service Workers: one active worker.
+2. Reload once so the page is controlled by the worker.
+3. **Go offline** and reload: the editor must still load, count and save.
+4. Saved copy → **Your data** → verify the counts, then *Download backup*.
+5. Confirm the footer reads `v1.0.0 · production`.
 
 ## Limits of the tool
 
@@ -221,7 +261,7 @@ Serve over HTTPS or localhost so the clipboard API works; the app falls back to
 - **Emoji on Google** are counted as 2 — a conservative assumption, since Google documents
   double-width CJK only. The live Google Ads editor is authoritative.
 - **Local storage is not encrypted or synced.** Export a JSON backup before clearing
-  browser data.
+  browser data. *Saved copy → Your data → Delete all data* removes every trace in one step.
 - **Not included:** publishing, account connections, live policy review, collaboration,
   AI rewrites.
 

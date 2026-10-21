@@ -10,8 +10,22 @@
 import { el } from './ui.js';
 import { countCodePoints } from './counter.js';
 
-const HANDLE = '@yourbrand';
-const BRAND = 'Your Brand';
+const DEFAULT_BRAND = { name: 'Your brand', domain: 'yourbrand.com', handle: 'yourbrand' };
+
+function brandFrom(options) {
+  const source = options?.brand && typeof options.brand === 'object' ? options.brand : {};
+  const pick = (value, fallback) => (typeof value === 'string' && value.trim() ? value.trim() : fallback);
+  return {
+    name: pick(source.name, DEFAULT_BRAND.name),
+    domain: pick(source.domain, DEFAULT_BRAND.domain),
+    handle: pick(source.handle, DEFAULT_BRAND.handle)
+  };
+}
+
+/** First letter of the brand, for avatar placeholders. */
+function initial(name) {
+  return Array.from(name ?? '')[0] ?? 'Y';
+}
 
 function truncate(text, limit) {
   const characters = Array.from(String(text ?? ''));
@@ -36,6 +50,7 @@ function googlePath(values) {
  * the ones that were not displayed.
  */
 function googlePreview(values, options = {}) {
+  const brand = brandFrom(options);
   const allMode = options.asset === 'all';
   const headlineValues = (values.headline ?? []).map(nonEmpty).filter(Boolean);
   const descriptionValues = (values.description ?? []).map(nonEmpty).filter(Boolean);
@@ -45,7 +60,7 @@ function googlePreview(values, options = {}) {
 
   const breadcrumb = el('div', { className: 'pv-google__url' }, [
     el('span', { className: 'pv-google__ad', text: 'Sponsored' }),
-    el('span', { className: 'pv-google__domain', text: 'yourbrand.com' }),
+    el('span', { className: 'pv-google__domain', text: brand.domain }),
     path ? el('span', { className: 'pv-google__path', text: ` › ${path.replace(/\//g, ' › ')}` }) : null
   ]);
 
@@ -91,7 +106,8 @@ function googlePreview(values, options = {}) {
 }
 
 /** X post with weighted-length awareness. */
-function xPreview(values) {
+function xPreview(values, options = {}) {
+  const brand = brandFrom(options);
   const text = nonEmpty(values.post);
   const body = el('div', { className: 'pv-x__text' });
   if (text) {
@@ -110,11 +126,11 @@ function xPreview(values) {
   }
 
   return el('div', { className: 'pv pv-x' }, [
-    el('div', { className: 'pv-x__avatar', 'aria-hidden': 'true', text: BRAND.slice(0, 1) }),
+    el('div', { className: 'pv-x__avatar', 'aria-hidden': 'true', text: initial(brand.name) }),
     el('div', { className: 'pv-x__main' }, [
       el('div', { className: 'pv-x__meta' }, [
-        el('span', { className: 'pv-x__name', text: BRAND }),
-        el('span', { className: 'pv-x__handle', text: HANDLE }),
+        el('span', { className: 'pv-x__name', text: brand.name }),
+        el('span', { className: 'pv-x__handle', text: `@${brand.handle}` }),
         el('span', { className: 'pv-x__dot', text: '·' }),
         el('span', { className: 'pv-x__time', text: 'now' })
       ]),
@@ -130,7 +146,8 @@ function xPreview(values) {
 }
 
 /** Meta feed ad: primary text with “See more”, creative block, headline, description. */
-function metaPreview(values) {
+function metaPreview(values, options = {}) {
+  const brand = brandFrom(options);
   const primary = nonEmpty(values.primary_text);
   const headline = nonEmpty(values.headline);
   const description = nonEmpty(values.description);
@@ -148,9 +165,9 @@ function metaPreview(values) {
 
   return el('div', { className: 'pv pv-meta' }, [
     el('div', { className: 'pv-meta__header' }, [
-      el('div', { className: 'pv-meta__avatar', 'aria-hidden': 'true', text: BRAND.slice(0, 1) }),
+      el('div', { className: 'pv-meta__avatar', 'aria-hidden': 'true', text: initial(brand.name) }),
       el('div', { className: 'pv-meta__who' }, [
-        el('span', { className: 'pv-meta__name', text: BRAND }),
+        el('span', { className: 'pv-meta__name', text: brand.name }),
         el('span', { className: 'pv-meta__sponsored', text: 'Sponsored · 🌐' })
       ])
     ]),
@@ -160,7 +177,7 @@ function metaPreview(values) {
     ]),
     el('div', { className: 'pv-meta__bar' }, [
       el('div', { className: 'pv-meta__copy' }, [
-        el('div', { className: 'pv-meta__domain', text: 'YOURBRAND.COM' }),
+        el('div', { className: 'pv-meta__domain', text: brand.domain.toUpperCase() }),
         el('div', { className: 'pv-meta__headline', text: headline || 'Your headline appears here' }),
         description ? el('div', { className: 'pv-meta__description', text: description }) : null
       ]),

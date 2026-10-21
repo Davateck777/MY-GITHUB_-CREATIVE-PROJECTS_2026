@@ -125,7 +125,7 @@ export const PLATFORMS = [
     summary:
       'One standard post of up to 280 weighted characters. URLs are shortened to t.co and always count as 23 characters, whatever their real length.',
     rulesNote:
-      'Counts come from the bundled official twitter-text parser (v3.1.0, v2 configuration), so weighting, URL handling and invalid-character checks match X. Premium long posts are out of scope for this MVP.',
+      'Counts come from the bundled official twitter-text parser (v3.1.0, v2 configuration), so weighting, URL handling and invalid-character checks match X. Premium long posts and threads are not counted here.',
     fields: [
       {
         key: 'post',

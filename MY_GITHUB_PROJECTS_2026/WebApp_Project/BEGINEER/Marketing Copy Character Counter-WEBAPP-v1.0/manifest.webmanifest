@@ -1,0 +1,58 @@
+{
+  "name": "Marketing Copy Character Counter",
+  "short_name": "Copy Counter",
+  "description": "Count marketing copy against Google Ads, X and Meta limits, with explainable writing checks and illustrative previews. Runs entirely in your browser.",
+  "id": "./",
+  "start_url": "./editor.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f6fb",
+  "theme_color": "#2f5fe0",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["productivity", "business", "utilities"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open the editor",
+      "short_name": "Editor",
+      "url": "./editor.html"
+    },
+    {
+      "name": "Saved copy",
+      "short_name": "Saved",
+      "url": "./saved.html"
+    },
+    {
+      "name": "Guide",
+      "short_name": "Guide",
+      "url": "./guide.html"
+    }
+  ]
+}

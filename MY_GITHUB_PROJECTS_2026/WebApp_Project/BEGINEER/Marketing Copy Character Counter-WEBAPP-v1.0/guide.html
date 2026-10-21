@@ -3,6 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#2f5fe0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b1017" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
   <title>Guide — Marketing Copy Character Counter</title>
   <meta name="description" content="How the counter works: platform rules and sources, counting methods, the Copy Readiness Score weights, storage and privacy, and known limitations.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui,sans-serif' font-size='15' font-weight='700' fill='white' text-anchor='middle'%3E30%3C/text%3E%3C/svg%3E">
@@ -58,6 +64,7 @@
       <a href="#previews">Previews</a>
       <a href="#privacy">Privacy &amp; storage</a>
       <a href="#limitations">Limitations</a>
+      <a href="#version">Version</a>
       <a href="#notices">Third-party notices</a>
     </nav>
 
@@ -243,6 +250,7 @@
       <h2 id="previews-title" class="section__title">Previews</h2>
       <p>Previews rebuild an approximate layout — a Google search result block, an X post, a Meta feed card — with a mobile/desktop width switch. They exist to test reading order and first-glance impression.</p>
       <p>The Google preview has two modes: <strong>As served</strong> shows up to three headlines and two descriptions, the most that can appear together; <strong>All assets</strong> lists every filled asset, which is how you audit the headlines and descriptions that will not be on screen at the same time.</p>
+      <p>Set the <strong>preview identity</strong> — brand name, X handle and domain — under the preview so the layouts read like your own account. It is stored in this browser and never leaves it.</p>
       <p>They do not reproduce real rendering. Truncation depends on the placement, the device, the viewer's font-size setting, the language and the platform's layout engine. Always confirm in the platform's own preview tool before publishing.</p>
     </section>
 
@@ -270,6 +278,16 @@
       </ul>
     </section>
 
+    <section class="section" id="version" aria-labelledby="version-title">
+      <h2 id="version-title" class="section__title">Version and support</h2>
+      <ul class="notes">
+        <li><strong>Build:</strong> <span data-version>v1.0.0</span>. Platform rules reviewed <strong>19 October 2026</strong>.</li>
+        <li><strong>Offline:</strong> once loaded, the app installs a service worker and keeps working without a connection. A new release shows a “Reload to update” prompt instead of silently changing under you.</li>
+        <li><strong>Backups:</strong> JSON exports are the supported way to move copy between browsers or devices. There is no account and no cloud sync.</li>
+        <li><strong>Removing your data:</strong> Saved copy → <em>Your data</em> → <em>Delete all data</em> clears every saved set, working copy and setting from this browser.</li>
+      </ul>
+    </section>
+
     <section class="section" id="notices" aria-labelledby="notices-title">
       <h2 id="notices-title" class="section__title">Third-party notices</h2>
       <p>
@@ -285,7 +303,7 @@
   <footer class="site-footer">
     <div class="site-footer__inner">
       <p class="site-footer__brand">Marketing Copy Character Counter — built by Mr DAVE ADEX | DAVA TECK</p>
-      <p class="site-footer__meta">Rules reviewed 19 October 2026 · <a href="index.html">Overview</a> · <a href="editor.html">Editor</a> · © <span data-year>2026</span></p>
+      <p class="site-footer__meta">Rules reviewed 19 October 2026 · <a href="index.html">Overview</a> · <a href="editor.html">Editor</a> · © <span data-year>2026</span> · <span data-version>v1.0.0</span></p>
     </div>
   </footer>
 </body>

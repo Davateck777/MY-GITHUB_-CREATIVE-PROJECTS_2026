@@ -3,6 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#2f5fe0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b1017" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
   <title>Marketing Copy Character Counter — platform-aware copy checks</title>
   <meta name="description" content="Count marketing copy against Google Ads, X and Meta limits, with transparent writing checks and an explainable Copy Readiness Score. Runs entirely in your browser.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui,sans-serif' font-size='15' font-weight='700' fill='white' text-anchor='middle'%3E30%3C/text%3E%3C/svg%3E">
@@ -70,7 +76,7 @@
           </div>
           <p class="mini-preview__text">We shipped weighted counting today. Links now count as 23 — exactly like the real thing → https://example.com/notes</p>
           <div class="meter" role="img" aria-label="Example meter at 84 percent">
-            <div class="meter__fill" data-status="near" style="width:84%"></div>
+            <div class="meter__fill meter__fill--demo" data-status="near"></div>
           </div>
           <div class="mini-preview__row">
             <span class="mini-preview__count">236 / 280</span>
@@ -198,7 +204,7 @@
       <p class="site-footer__brand">Marketing Copy Character Counter — built by Mr DAVE ADEX | DAVA TECK</p>
       <p class="site-footer__meta">
         Rules reviewed 19 October 2026 · <a href="guide.html#rules">sources and review dates</a> ·
-        <a href="THIRD-PARTY-NOTICES.md">third-party notices</a> · © <span data-year>2026</span>
+        <a href="THIRD-PARTY-NOTICES.md">third-party notices</a> · © <span data-year>2026</span> · <span data-version>v1.0.0</span>
       </p>
       <p class="site-footer__meta">Static site. No tracking, no analytics, no cookies.</p>
     </div>

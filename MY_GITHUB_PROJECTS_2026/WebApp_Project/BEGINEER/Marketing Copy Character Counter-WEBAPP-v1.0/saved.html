@@ -3,6 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#2f5fe0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b1017" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
   <title>Saved copy — Marketing Copy Character Counter</title>
   <meta name="description" content="Manage saved copy sets stored in this browser: search, rename, duplicate, copy, export, delete, and import a validated JSON backup.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui,sans-serif' font-size='15' font-weight='700' fill='white' text-anchor='middle'%3E30%3C/text%3E%3C/svg%3E">
@@ -79,6 +85,8 @@
 
       <div class="import-report" data-import-report hidden></div>
 
+      <div data-data-panel></div>
+
       <p class="library-meta" data-saved-meta></p>
 
       <div class="set-list" data-saved-list></div>
@@ -106,7 +114,7 @@
       <p class="site-footer__meta">
         <a href="guide.html#privacy">Privacy and storage</a> ·
         <a href="guide.html#rules">Rules and limits</a> ·
-        © <span data-year>2026</span>
+        © <span data-year>2026</span> · <span data-version>v1.0.0</span>
       </p>
     </div>
   </footer>

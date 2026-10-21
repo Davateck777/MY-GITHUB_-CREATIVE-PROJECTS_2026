@@ -19,11 +19,17 @@ const KEYS = {
   draftKeywords: `${NAMESPACE}:keywords:v${SCHEMA_VERSION}`
 };
 
+export const DEFAULT_PREVIEW_BRAND = Object.freeze({
+  name: 'Your brand',
+  domain: 'yourbrand.com',
+  handle: 'yourbrand'
+});
+
 export const DEFAULT_SETTINGS = Object.freeze({
   theme: 'system', // 'system' | 'light' | 'dark'
   lastPlatform: 'google',
   previewDevice: 'mobile', // 'mobile' | 'desktop'
-  showGuidePanel: true
+  previewBrand: DEFAULT_PREVIEW_BRAND
 });
 
 /** Detect storage availability without throwing. */
@@ -75,7 +81,27 @@ function writeJSON(key, value) {
 
 export function loadSettings() {
   const stored = readJSON(KEYS.settings, {});
-  return { ...DEFAULT_SETTINGS, ...(stored && typeof stored === 'object' ? stored : {}) };
+  const base = { ...DEFAULT_SETTINGS, ...(stored && typeof stored === 'object' ? stored : {}) };
+  return { ...base, previewBrand: normaliseBrand(base.previewBrand) };
+}
+
+/** Keep the preview identity safe to render: strings only, sane lengths. */
+export function normaliseBrand(brand) {
+  const source = brand && typeof brand === 'object' ? brand : {};
+  const clean = (value, fallback, max) => {
+    const text = typeof value === 'string' ? value.trim() : '';
+    return (text || fallback).slice(0, max);
+  };
+  return {
+    name: clean(source.name, DEFAULT_PREVIEW_BRAND.name, 40),
+    domain: clean(source.domain, DEFAULT_PREVIEW_BRAND.domain, 60).replace(/^https?:\/\//, '').replace(/\/+$/, ''),
+    handle: clean(source.handle, DEFAULT_PREVIEW_BRAND.handle, 30).replace(/^@/, '')
+  };
+}
+
+export function savePreviewBrand(brand) {
+  const settings = loadSettings();
+  return saveSettings({ ...settings, previewBrand: normaliseBrand(brand) });
 }
 
 export function saveSettings(settings) {
@@ -182,6 +208,28 @@ export function searchSets(sets, query) {
       .toLowerCase();
     return haystack.includes(needle);
   });
+}
+
+/**
+ * Delete every key this app owns. Used by the "Delete all data" control, which is
+ * the only way to remove absolutely everything from the browser in one action.
+ */
+export function clearAllData() {
+  const removed = [];
+  try {
+    const keys = [];
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (key && key.startsWith(NAMESPACE)) keys.push(key);
+    }
+    for (const key of keys) {
+      window.localStorage.removeItem(key);
+      removed.push(key);
+    }
+    return { ok: true, removed };
+  } catch {
+    return { ok: false, error: 'This browser blocked local storage, so nothing could be deleted.', removed };
+  }
 }
 
 /** Rough storage footprint, for the Saved Copy footer. */
